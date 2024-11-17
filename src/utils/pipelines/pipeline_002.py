@@ -53,7 +53,8 @@ class Pipeline2(CLIPSegOffnavPipeline):
                 plane_fit_mask=pooled_trav_mask
                 > self._config.plane_fitting.trav_thresh,  # type: ignore
             )  # Dimensions: (H, W)
-
+            #confert height scores to float32
+            height_scores = height_scores.type(torch.float16)
             # Combine the two scores
             final_output = pooled_trav_mask.to(
                 device=self._config.device

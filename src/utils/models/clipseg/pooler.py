@@ -105,7 +105,7 @@ class ProbabilisticPooler(CLIPSegMaskPooler):
                 Dimension: `(H, W)`
         """
         _device: torch.device = torch.device(device=device)
-        weights_arr = np.array(weights)
+        weights_arr = np.array(weights).astype(np.float32)
         weights_tensor = torch.tensor(weights_arr).reshape(-1, 1, 1).to(device=_device)
         pos_inx, neg_inx = weights_arr > 0, weights_arr < 0
         z = weights_tensor * masks.squeeze(1)

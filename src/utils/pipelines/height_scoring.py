@@ -49,6 +49,7 @@ class HeightScoringPipeline:
             cx=camera_config.cx,
             cy=camera_config.cy,
         )
+        print("HeightScoringPipeline initialized using device:", self._model._device)
 
     # @timeit
     def _create_pointcloud(self, depth_z: torch.Tensor) -> torch.Tensor:

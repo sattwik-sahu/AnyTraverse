@@ -125,6 +125,7 @@ class DepthAnythingV2_MetricOutdoorLarge:
     # @timeit
     def __call__(self, x: Image) -> torch.Tensor:
         x_tensor = self._processor(images=x, return_tensors="pt").to(self._device)
+        type(x_tensor)
         with torch.no_grad():
             outputs = self._model(**x_tensor)
             predicted_depth = outputs.predicted_depth
