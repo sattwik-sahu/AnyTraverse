@@ -1,0 +1,65 @@
+import torch
+from PIL.Image import Image
+from typing_extensions import override
+
+from config.pipeline_002 import PipelineConfig
+from utils.models.clipseg.model import CLIPSeg
+from utils.pipelines import CLIPSegOffnavPipeline
+from utils.models.clipseg.pooler import CLIPSegMaskPooler
+from utils.pipelines.height_scoring import HeightScoringPipeline
+
+
+class Pipeline2(CLIPSegOffnavPipeline):
+    _clipseg: CLIPSeg
+    _config: PipelineConfig
+    _mask_pooler: CLIPSegMaskPooler
+    _height_scoring_pipeline: HeightScoringPipeline
+    _perform_height_scoring: bool
+
+    def __init__(self, config: PipelineConfig) -> None:
+        super().__init__(name="Pipeline_002")
+        self._config = config
+        self._clipseg = CLIPSeg(device=self._config.device)
+        self._perform_height_scoring = (
+            config.plane_fitting is not None
+            and config.height_scoring is not None
+            and self._config.height_score
+        )
+
+        if self._perform_height_scoring:
+            self._height_scoring_pipeline = HeightScoringPipeline(
+                plane_fitter=self._config.plane_fitting.fitter,  # type: ignore
+                alpha=self._config.height_scoring.alpha,  # type: ignore
+                z_thresh=self._config.height_scoring.z_thresh,  # type: ignore
+                camera_config=self._config.camera,
+                device=self._config.device,
+            )
+
+    @override
+    def __call__(self, image: Image) -> torch.Tensor:
+        trav_masks: torch.Tensor = self._clipseg(
+            image=image, prompts=[p[0] for p in self._config.prompts]
+        )  # Dimensions: (num_prompts, 1, H, W)
+
+        pooled_trav_mask: torch.Tensor = self._config.mask_pooler.pool(
+            masks=trav_masks,
+            weights=[p[1] for p in self._config.prompts],
+            device=self._config.device,
+        )  # Dimensions: (H, W)
+
+        if self._perform_height_scoring:
+            height_scores: torch.Tensor = self._height_scoring_pipeline(
+                image=image,
+                plane_fit_mask=pooled_trav_mask
+                > self._config.plane_fitting.trav_thresh,  # type: ignore
+            )  # Dimensions: (H, W)
+
+            # Combine the two scores
+            final_output = pooled_trav_mask.to(
+                device=self._config.device
+            ) * height_scores.to(self._config.device)
+
+        else:
+            final_output = pooled_trav_mask
+
+        return final_output
