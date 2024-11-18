@@ -43,7 +43,7 @@ class CLIPSeg:
             image = open_image(image)
         image_resized = image.resize(size=(224, 224), resample=Resampling.LANCZOS)
         images: List[Image] = [image_resized] * len(prompts)
-        x = self._processor(text=prompts, images=images, return_tensors="pt").to(
+        x = self._processor(text=prompts, images=images, return_tensors="pt", padding=True).to(
             device=self._device
         )  # type: ignore
         x["pixel_values"] = torch.nn.functional.interpolate(
