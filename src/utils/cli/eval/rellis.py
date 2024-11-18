@@ -36,8 +36,8 @@ def run_eval(show_viz: bool = True):
     rellis_dataloader = DataLoader(
         dataset=RellisDataset(
             images_root=images_root,
-            masks_root=masks_root,
             path_list_path=paths_list_path,
+            masks_root=masks_root,
         ),
         batch_size=1,
         shuffle=True,
