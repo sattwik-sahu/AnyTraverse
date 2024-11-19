@@ -21,10 +21,14 @@ from utils.helpers.plane_fit import PCAPlaneFitter
 from utils.models.clipseg.pooler import WeightedMaxPooler, ProbabilisticPooler
 from utils.pipelines.pipeline_002 import Pipeline2
 from config.pipeline_002 import PipelineConfig
+from rich.console import Console
 
 # Force OpenCV to use CPU
 os.environ["OPENCV_DNN_BACKEND_CUDA"] = "0"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+
+console = Console()
 
 
 @dataclass
@@ -52,7 +56,11 @@ def create_pipeline():
         mask_pooler=ProbabilisticPooler(),
     )
 
-    return Pipeline2(config=config)
+    with console.status("Initializing pipeline..."):
+        pipeline = Pipeline2(config=config)
+    console.log("Created pipeline")
+
+    return pipeline
 
 
 class CameraStream:
