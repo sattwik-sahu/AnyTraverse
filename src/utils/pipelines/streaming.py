@@ -22,6 +22,7 @@ from utils.models.clipseg.pooler import WeightedMaxPooler, ProbabilisticPooler
 from utils.pipelines.pipeline_002 import Pipeline2
 from config.pipeline_002 import PipelineConfig
 from rich.console import Console
+from rich.prompt import Prompt
 
 # Force OpenCV to use CPU
 os.environ["OPENCV_DNN_BACKEND_CUDA"] = "0"
@@ -53,7 +54,8 @@ def create_pipeline():
             trav_thresh=0.1,
         ),
         height_score=False,
-        mask_pooler=ProbabilisticPooler(),
+        # mask_pooler=ProbabilisticPooler(),
+        mask_pooler=WeightedMaxPooler()
     )
 
     with console.status("Initializing pipeline..."):
@@ -67,8 +69,14 @@ class CameraStream:
     def __init__(self, config: StreamConfig):
         self.config = config
         self.pipeline = create_pipeline()
-        # self.cap = EasyPySpin.VideoCapture(0)
-        self.cap = cv2.VideoCapture(0)
+
+        cam_type = Prompt.ask("Webcam or FLIR camera?", choices=["webcam", "flir"])
+
+        match cam_type:
+            case "flir":
+                self.cap = EasyPySpin.VideoCapture(0)
+            case "webcam":
+                self.cap = cv2.VideoCapture(0)
 
         # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
@@ -79,7 +87,7 @@ class CameraStream:
     ) -> np.ndarray:
         mask_binary = mask > threshold
         color_mask = np.zeros_like(frame)
-        color_mask[mask_binary] = self.config.overlay_color
+        color_mask[mask_binary] = self.config.overlay_color[::-1]
         return cv2.addWeighted(frame, 1, color_mask, self.config.alpha, 0)
 
     async def get_frame(self) -> Optional[str]:
