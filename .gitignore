@@ -177,3 +177,5 @@ pyrightconfig.json
 
 src/utils/models/depth_anything_v2
 tests/*
+
+src/utils/camera/*.avi

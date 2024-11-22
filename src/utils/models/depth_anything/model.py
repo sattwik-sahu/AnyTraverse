@@ -33,7 +33,7 @@ class DepthAnythingV2_small:
     def __init__(self, device: Literal["cpu", "cuda"]) -> None:
         self._pipeline = pipeline(
             task="depth-estimation",
-            model="depth-anything/Depth-Anything-V2-Metric-Indoor-Large-hf",
+            model="depth-anything/Depth-Anything-V2-Metric-Indoor-Base-hf",
             device=device,
         )
 
@@ -116,10 +116,12 @@ class DepthAnythingV2_MetricOutdoorLarge:
         self._device = device
 
         self._processor = AutoImageProcessor.from_pretrained(
-            "depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf"
+            "depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf",
+            cache_dir="data/weights",
         )
         self._model = AutoModelForDepthEstimation.from_pretrained(
-            "depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf"
+            "depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf",
+            cache_dir="data/weights",
         ).to(device=self._device)
 
     # @timeit

@@ -54,22 +54,33 @@ class WeightedMaxPooler(CLIPSegMaskPooler):
     def pool(
         masks: torch.Tensor, weights: List[float], *args, **kwargs
     ) -> torch.Tensor:
+        # masks_ = masks.squeeze(1)
+        # # print(masks_.shape, len(weights))
+        # pooled_list = []
+        # pooled_mask: torch.Tensor = torch.zeros_like(masks[0])
+        # for mask, weight in zip(masks_, weights):
+        #     pooled_list.append(mask * weight)
+
+        # # pooled_mask = torch.stack(pooled_list).max(dim=0).values
+        # stacked = torch.stack(pooled_list)
+        # abs_stacked = stacked.abs()
+        # _, indices = abs_stacked.max(dim=0)
+        # pooled_mask = stacked.gather(dim=0, index=indices.unsqueeze(0)).squeeze(0)
+
+        # # print(pooled_mask.shape)
+        # pooled_mask.clip(min=0.0, max=1.0)
+        # # return pooled_mask.squeeze(0)
+        # return pooled_mask
+
         masks_ = masks.squeeze(1)
-        # print(masks_.shape, len(weights))
-        pooled_list = []
-        pooled_mask: torch.Tensor = torch.zeros_like(masks[0])
-        for mask, weight in zip(masks_, weights):
-            pooled_list.append(mask * weight)
+        weights_tensor = torch.tensor(weights, device=masks.device).view(-1, 1, 1)
+        weighted_masks = masks_ * weights_tensor
 
-        # pooled_mask = torch.stack(pooled_list).max(dim=0).values
-        stacked = torch.stack(pooled_list)
-        abs_stacked = stacked.abs()
-        _, indices = abs_stacked.max(dim=0)
-        pooled_mask = stacked.gather(dim=0, index=indices.unsqueeze(0)).squeeze(0)
+        abs_weighted_masks = weighted_masks.abs()
+        _, indices = abs_weighted_masks.max(dim=0)
+        pooled_mask = weighted_masks.gather(dim=0, index=indices.unsqueeze(0)).squeeze(0)
 
-        # print(pooled_mask.shape)
-        pooled_mask.clip(min=0.0, max=1.0)
-        # return pooled_mask.squeeze(0)
+        pooled_mask.clip_(min=0.0, max=1.0)
         return pooled_mask
 
 
