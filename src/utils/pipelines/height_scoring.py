@@ -1,7 +1,7 @@
 import torch
 from PIL import Image
 from utils.models.depth_anything.model import DepthAnythingV2_MetricOutdoorLarge
-from typing import Literal
+from typing import Literal, Tuple
 from config.pipeline_001 import CameraConfig
 from utils.helpers.pointcloud import PointcloudManager, correct_points_with_plane_parms
 from utils.helpers.plane_fit import PlaneFitter, PlaneParameters
@@ -22,19 +22,23 @@ Device = Literal["cpu", "cuda", "mps"]
 #     return timed
 
 
+def p_trav(z: torch.Tensor, alpha: float, z_thresh: float) -> torch.Tensor:
+    return torch.sigmoid(-alpha * (z - z_thresh))
+
+
 class HeightScoringPipeline:
     _model: DepthAnythingV2_MetricOutdoorLarge
     _device: Device
-    _z_thresh: float
-    _alpha: float
+    _z_thresh: Tuple[float, float]
+    _alpha: Tuple[float, float]
     _pointcloud_manager: PointcloudManager
     _plane_fitter: PlaneFitter
 
     def __init__(
         self,
         plane_fitter: PlaneFitter,
-        z_thresh: float,
-        alpha: float,
+        z_thresh: Tuple[float, float],
+        alpha: Tuple[float, float],
         camera_config: CameraConfig,
         device: Device = "cpu",
     ):
@@ -104,8 +108,9 @@ class HeightScoringPipeline:
         )  # Dimensions: (H, W)
 
         # Calculate the height scores
-        height_scores: torch.Tensor = torch.sigmoid(
-            -(self._alpha * (zs - self._z_thresh))
-        )  # Dimensions: (H, W)
+        cond_z = zs >= 0
+        p_pos = p_trav(z=zs, alpha=self._alpha[1], z_thresh=self._z_thresh[1])
+        p_neg = p_trav(z=zs, alpha=-self._alpha[0], z_thresh=self._z_thresh[0])
+        height_scores = torch.where(cond_z, p_pos, p_neg)
 
         return height_scores

@@ -52,7 +52,7 @@ def run_eval(show_viz: bool = True):
         camera=CameraConfig(fx=fx, fy=fy, cx=cx, cy=cy),
         prompts=[("grass", 1.0), ("bush", -1.0), ("path", 1.0), ("water", -1.0)],
         device=device,
-        height_scoring=HeightScoringConfig(alpha=30, z_thresh=0.2),
+        height_scoring=HeightScoringConfig(alpha=(80, 30), z_thresh=(-0.1, 0.2)),
         plane_fitting=PlaneFittingConfig(
             fitter=PCAPlaneFitter(),
             trav_thresh=0.5,
