@@ -1,6 +1,7 @@
 ./data/
 tests/
-data
+data/
+notebooks/
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
