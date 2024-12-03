@@ -83,12 +83,13 @@ class CameraStream:
         self.running = False
 
     def overlay_mask(
-        self, frame: np.ndarray, mask: np.ndarray, threshold: float = 0.5
+        self, frame: np.ndarray, mask: np.ndarray, threshold: float = 0.5, alpha: float = 0.3
     ) -> np.ndarray:
         mask_binary = mask > threshold
         color_mask = np.zeros_like(frame)
         color_mask[mask_binary] = self.config.overlay_color[::-1]
-        return cv2.addWeighted(frame, 1, color_mask, self.config.alpha, 0)
+        overlayed_mask = frame * (1 - alpha) + alpha * color_mask
+        return overlayed_mask
 
     async def get_frame(self) -> Optional[str]:
         ret, frame = self.cap.read()
