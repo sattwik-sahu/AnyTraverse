@@ -4,9 +4,9 @@ from typing_extensions import override
 
 from config.pipeline_002 import PipelineConfig
 from utils.models.clipseg.model import CLIPSeg
-from utils.pipelines import CLIPSegOffnavPipeline
+from utils.pipelines import CLIPSegOffnavPipeline, PipelineOutput
 from utils.models.clipseg.pooler import CLIPSegMaskPooler
-from utils.pipelines.height_scoring import HeightScoringPipeline
+from utils.pipelines.height_scoring import HeightScoringPipeline, HeightScoringOutput
 
 
 class Pipeline2(CLIPSegOffnavPipeline):
@@ -15,6 +15,8 @@ class Pipeline2(CLIPSegOffnavPipeline):
     _mask_pooler: CLIPSegMaskPooler
     _height_scoring_pipeline: HeightScoringPipeline
     _perform_height_scoring: bool
+
+    _analysis: PipelineOutput
 
     def __init__(self, config: PipelineConfig) -> None:
         super().__init__(name="Pipeline_002")
@@ -36,7 +38,7 @@ class Pipeline2(CLIPSegOffnavPipeline):
             )
 
     @override
-    def __call__(self, image: Image) -> torch.Tensor:
+    def __call__(self, image: Image) -> PipelineOutput:
         trav_masks: torch.Tensor = self._clipseg(
             image=image, prompts=[p[0] for p in self._config.prompts]
         )  # Dimensions: (num_prompts, 1, H, W)
@@ -47,20 +49,27 @@ class Pipeline2(CLIPSegOffnavPipeline):
             device=self._config.device,
         )  # Dimensions: (H, W)
 
+        height_scores: HeightScoringOutput | None = None
         if self._perform_height_scoring:
-            height_scores: torch.Tensor = self._height_scoring_pipeline(
+            height_scores = self._height_scoring_pipeline(
                 image=image,
                 plane_fit_mask=pooled_trav_mask
                 > self._config.plane_fitting.trav_thresh,  # type: ignore
             )  # Dimensions: (H, W)
-            #confert height scores to float32
-            height_scores = height_scores.type(torch.float16)
+
+            # convert height scores to float32
+            z_scores = height_scores.scores.type(torch.float16)
+
             # Combine the two scores
             final_output = pooled_trav_mask.to(
                 device=self._config.device
-            ) * height_scores.to(self._config.device)
-
+            ) * z_scores.to(self._config.device)
         else:
             final_output = pooled_trav_mask
 
-        return final_output
+        return PipelineOutput(
+            trav_masks=trav_masks,
+            pooled_mask=pooled_trav_mask,
+            height_scores=height_scores,
+            output=final_output
+        )

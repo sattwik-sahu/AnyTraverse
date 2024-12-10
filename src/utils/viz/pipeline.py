@@ -10,8 +10,8 @@ from typing import Dict, Any, Tuple, List
 
 def plot_anytraverse_output(
     image: Image.Image,
-    mask_true: npt.NDArray[np.bool],
-    mask_pred: npt.NDArray[np.bool],
+    mask_true: np.ndarray,
+    mask_pred: np.ndarray,
     params: Dict[str, Any],
     fig: Figure | None = None,
     ax: List[Axes] | None = None,
@@ -26,8 +26,8 @@ def plot_anytraverse_output(
 
     Args:
         image (Image.Image): The original image.
-        mask_true (npt.NDArray[np.bool]): The ground truth mask.
-        mask_pred (npt.NDArray[np.bool]): The predicted mask.
+        mask_true (np.ndarray): The ground truth mask.
+        mask_pred (np.ndarray): The predicted mask.
         params (Dict[str, Any]): The parameters to show in the plot.
 
     Returns:

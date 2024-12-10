@@ -2,7 +2,7 @@ import numpy as np
 from numpy import typing as npt
 
 
-def iou_score(y_true: npt.NDArray[np.bool], y_pred: npt.NDArray[np.bool]) -> float:
+def iou_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     Computes the Intersection over Union (IoU) score.
 

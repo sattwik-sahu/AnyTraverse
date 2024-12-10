@@ -16,7 +16,7 @@ from config.utils import (
     HeightScoringConfig,
     PlaneFittingConfig,
 )
-from utils.data.rugd import RUGD_Dataset
+from utils.datasets.rugd import RUGD_Dataset
 from utils.helpers.plane_fit import PCAPlaneFitter
 from utils.metrics.iou import iou_score
 from utils.models.clipseg.pooler import WeightedMaxPooler, ProbabilisticPooler
