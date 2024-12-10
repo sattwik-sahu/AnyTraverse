@@ -11,7 +11,7 @@ from config.utils import (
 )
 from utils.models.clipseg.pooler import WeightedMaxPooler, ProbabilisticPooler
 from utils.helpers.plane_fit import PCAPlaneFitter
-from utils.data.rellis import RellisDataset
+from utils.datasets.rellis import RellisDataset
 from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -30,7 +30,7 @@ def run_eval(show_viz: bool = True):
     # Define the paths
     images_root = "/mnt/toshiba_hdd/datasets/rellis-3d/Rellis-3D-images/"
     masks_root = "/mnt/toshiba_hdd/datasets/rellis-3d/Rellis-3D-masks/"
-    paths_list_path = "/home/moonlab/Downloads/rellis-3d-splits/train.lst"
+    paths_list_path = "/mnt/toshiba_hdd/datasets/rellis-3d/splits/train.lst"
 
     # Create the dataloader
     rellis_dataloader = DataLoader(
@@ -60,7 +60,7 @@ def run_eval(show_viz: bool = True):
             ("dirt", 1.0),
         ],
         device=device,
-        height_scoring=HeightScoringConfig(alpha=30, z_thresh=0.1),
+        height_scoring=HeightScoringConfig(alpha=(75, 30), z_thresh=(-0.1, 0.1)),
         plane_fitting=PlaneFittingConfig(
             fitter=PCAPlaneFitter(),
             trav_thresh=0.3,
