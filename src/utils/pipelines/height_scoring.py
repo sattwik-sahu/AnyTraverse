@@ -1,7 +1,7 @@
 import torch
 from PIL import Image
 from utils.models.depth_anything.model import DepthAnythingV2_MetricOutdoorLarge
-from typing import Literal, Tuple
+from typing import Literal, Tuple, NamedTuple
 from config.pipeline_001 import CameraConfig
 from utils.helpers.pointcloud import PointcloudManager, correct_points_with_plane_parms
 from utils.helpers.plane_fit import PlaneFitter, PlaneParameters
@@ -20,6 +20,14 @@ Device = Literal["cpu", "cuda", "mps"]
 #         return result
 
 #     return timed
+
+
+class HeightScoringOutput(NamedTuple):
+    depth_image: torch.Tensor
+    points: torch.Tensor
+    plane_params: PlaneParameters
+    points_corrected: torch.Tensor
+    scores: torch.Tensor
 
 
 def p_trav(z: torch.Tensor, alpha: float, z_thresh: float) -> torch.Tensor:
@@ -70,7 +78,7 @@ class HeightScoringPipeline:
     # @timeit
     def __call__(
         self, image: Image.Image, plane_fit_mask: torch.Tensor
-    ) -> torch.Tensor:
+    ) -> HeightScoringOutput:
         """
         Runs the height scoring pipeline on the image and returns the height
         score for each pixel in the image.
@@ -113,4 +121,10 @@ class HeightScoringPipeline:
         p_neg = p_trav(z=zs, alpha=-self._alpha[0], z_thresh=self._z_thresh[0])
         height_scores = torch.where(cond_z, p_pos, p_neg)
 
-        return height_scores
+        return HeightScoringOutput(
+            depth_image=depth_z,
+            points=points,
+            plane_params=(a, b, c, d),
+            points_corrected=points_corrected,
+            scores=height_scores
+        )

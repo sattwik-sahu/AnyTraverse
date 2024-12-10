@@ -208,35 +208,37 @@ def plot_pointcloud_3d_with_plane(
 
     fig = go.Figure(
         data=[
-            # go.Scatter3d(
-            #     x=x_plot,
-            #     y=y_plot,
-            #     z=z_plot,
-            #     mode="markers",
-            #     marker=dict(
-            #         size=2,
-            #         color=color_values,
-            #         colorscale="Jet",
-            #         opacity=0.8,
-            #         showscale=True,  # Add colorbar
-            #         colorbar=dict(
-            #             title="Color Intensity"
-            #             if color_intensity is not None
-            #             else "Z-axis"
-            #         ),
-            #     ),
-            # ),
+            go.Scatter3d(
+                x=x_plot,
+                y=y_plot,
+                z=z_plot,
+                mode="markers",
+                marker=dict(
+                    size=2,
+                    color=color_values,
+                    colorscale="Jet",
+                    opacity=0.8,
+                    showscale=True,  # Add colorbar
+                    colorbar=dict(
+                        title="Color Intensity"
+                        if color_intensity is not None
+                        else "Z-axis"
+                    ),
+                ),
+            ),
 
             #plot 3D plane given parameters
-            go.Surface(x=X, y=Y, z=Z)
+            go.Surface(x=x, y=y, z=Z)
         ]
     )
+
+    print(len(Z))
 
     fig.update_layout(
         title=title,
         scene=dict(xaxis_title="X", yaxis_title="Y", zaxis_title="Z"),
-        width=800,
-        height=800,
+        # width=800,
+        # height=800,
     )
 
     return fig
