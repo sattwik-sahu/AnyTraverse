@@ -53,7 +53,7 @@ print("device", device)
 
 config = PipelineConfig(
     camera=CameraConfig(fx=fx, fy=fy, cx=cx, cy=cy),
-    prompts=[("Human", 1), ("bush", -1)],
+    prompts=[("dirt", 1), ("grass", 1), ("rocks", -1)],
     device=device,
     height_scoring=HeightScoringConfig(alpha=30, z_thresh=0.1),
     plane_fitting=PlaneFittingConfig(
@@ -84,15 +84,17 @@ prev_time = time.time()
 while True:
     try:
         ret, frame = cap.read()
+        frame = cv2.imread("data/frame_117.png")
         if ret:
+            # print(frame.shape, type(frame))
             # use camera parameters to correct image
-            frame = cv2.undistort(frame, camera_matrix, distortion_coefficients, None)
+            # frame = cv2.undistort(frame, camera_matrix, distortion_coefficients, None)
             # resize frame
             frame = cv2.resize(frame, (640, 420))
             # frame = cv2.resize(frame, (1280, 720))
 
             # bgr to rgb
-            # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             # Calculate FPS
             current_time = time.time()
