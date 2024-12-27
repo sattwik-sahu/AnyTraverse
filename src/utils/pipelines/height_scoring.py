@@ -7,7 +7,7 @@ from utils.helpers.pointcloud import PointcloudManager, correct_points_with_plan
 from utils.helpers.plane_fit import PlaneFitter, PlaneParameters
 # import time
 
-Device = Literal["cpu", "cuda", "mps"]
+Device = Literal["cpu", "cuda", "mps"] | torch.device
 
 
 # define a timeit decorator
@@ -93,7 +93,8 @@ class HeightScoringPipeline:
             The height score for each pixel in the image. Dimensions: (H, W)
         """
         # Run depth anything
-        depth_z: torch.Tensor = self._model(x=image).squeeze(0, 1)  # Dimensions: (H, W)
+        depth_z: torch.Tensor = self._model(
+            x=image).squeeze(0, 1)  # Dimensions: (H, W)
 
         # Create pointcloud
         points: torch.Tensor = self._create_pointcloud(

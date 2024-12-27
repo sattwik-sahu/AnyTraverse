@@ -1,5 +1,5 @@
 import numpy as np
-from numpy import typing as npt
+import torch
 
 
 def iou_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -18,3 +18,17 @@ def iou_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     if den == 0:
         return 1.0
     return num / den
+
+
+def iou_torch(y_true: torch.BoolTensor, y_pred: torch.BoolTensor) -> float:
+    """
+    Computes the IoU score between two `torch.BoolTensor` masks.
+
+    Args:
+        y_true (torch.BoolTensor): The ground truth mask.
+        y_pred (torch.BoolTensor): The predicted mask.
+
+    Returns:
+        float: The IoU score.
+    """
+    return float(torch.sum(y_true & y_pred) / torch.sum(y_true | y_pred))

@@ -21,19 +21,12 @@ class CLIPSeg:
     def __init__(
         self,
         model_name: str | None = None,
-        device: Literal["cpu", "cuda", "mps"] = "cpu",
+        device: Literal["cpu", "cuda", "mps"] | torch.device = "cpu",
     ) -> None:
-        match device:
-            case "cpu":
-                self._device = torch.device("cpu")
-            case "cuda":
-                self._device = torch.device("cuda")
-            case "mps":
-                self._device = torch.device("mps")
+        self._device = torch.device(device)
         self._processor, self._model = load_clipseg_processor_and_model(
             pretrained_model_name=model_name
         )
-        # self._processor = self._processor.to(device=self._device)  # type: ignore
         self._model = self._model.to(device=self._device)  # type: ignore
 
     def _preprocess(
@@ -41,7 +34,8 @@ class CLIPSeg:
     ) -> Tuple[Image, CLIPSegInputEncoded]:
         if isinstance(image, Path) or isinstance(image, str):
             image = open_image(image)
-        image_resized = image.resize(size=(224, 224), resample=Resampling.LANCZOS)
+        image_resized = image.resize(
+            size=(224, 224), resample=Resampling.LANCZOS)
         images: List[Image] = [image_resized] * len(prompts)
         x = self._processor(
             text=prompts, images=images, return_tensors="pt", padding=True

@@ -2,11 +2,12 @@ import torch
 from PIL.Image import Image
 from typing_extensions import override
 
-from config.pipeline_002 import PipelineConfig
+from config.pipeline_002 import PipelineConfig, WeightedPrompt
 from utils.models.clipseg.model import CLIPSeg
 from utils.pipelines import CLIPSegOffnavPipeline, PipelineOutput
 from utils.models.clipseg.pooler import CLIPSegMaskPooler
 from utils.pipelines.height_scoring import HeightScoringPipeline, HeightScoringOutput
+from typing import List
 
 
 class Pipeline2(CLIPSegOffnavPipeline):
@@ -37,6 +38,22 @@ class Pipeline2(CLIPSegOffnavPipeline):
                 device=self._config.device,
             )
 
+    @property
+    def prompts(self) -> List[WeightedPrompt]:
+        return self._config.prompts
+
+    @prompts.setter
+    def prompts(self, prompts_: List[WeightedPrompt]) -> None:
+        self._config.prompts = prompts_
+
+    @property
+    def perform_height_scoring(self) -> bool:
+        return self._config.height_score
+
+    @perform_height_scoring.setter
+    def perform_height_scoring(self, perform_height_scoring_: bool) -> None:
+        self._config.height_score = perform_height_scoring_
+
     @override
     def __call__(self, image: Image) -> PipelineOutput:
         trav_masks: torch.Tensor = self._clipseg(
@@ -50,7 +67,7 @@ class Pipeline2(CLIPSegOffnavPipeline):
         )  # Dimensions: (H, W)
 
         height_scores: HeightScoringOutput | None = None
-        if self._perform_height_scoring:
+        if self._config.height_score:
             height_scores = self._height_scoring_pipeline(
                 image=image,
                 plane_fit_mask=pooled_trav_mask
