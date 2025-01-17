@@ -1,13 +1,13 @@
 import torch
 from PIL import Image
 from utils.models.depth_anything.model import DepthAnythingV2_MetricOutdoorLarge
-from typing import Literal
+from typing import Literal, Tuple, NamedTuple
 from config.pipeline_001 import CameraConfig
 from utils.helpers.pointcloud import PointcloudManager, correct_points_with_plane_parms
 from utils.helpers.plane_fit import PlaneFitter, PlaneParameters
 # import time
 
-Device = Literal["cpu", "cuda", "mps"]
+Device = Literal["cpu", "cuda", "mps"] | torch.device
 
 
 # define a timeit decorator
@@ -22,19 +22,31 @@ Device = Literal["cpu", "cuda", "mps"]
 #     return timed
 
 
+class HeightScoringOutput(NamedTuple):
+    depth_image: torch.Tensor
+    points: torch.Tensor
+    plane_params: PlaneParameters
+    points_corrected: torch.Tensor
+    scores: torch.Tensor
+
+
+def p_trav(z: torch.Tensor, alpha: float, z_thresh: float) -> torch.Tensor:
+    return torch.sigmoid(-alpha * (z - z_thresh))
+
+
 class HeightScoringPipeline:
     _model: DepthAnythingV2_MetricOutdoorLarge
     _device: Device
-    _z_thresh: float
-    _alpha: float
+    _z_thresh: Tuple[float, float]
+    _alpha: Tuple[float, float]
     _pointcloud_manager: PointcloudManager
     _plane_fitter: PlaneFitter
 
     def __init__(
         self,
         plane_fitter: PlaneFitter,
-        z_thresh: float,
-        alpha: float,
+        z_thresh: Tuple[float, float],
+        alpha: Tuple[float, float],
         camera_config: CameraConfig,
         device: Device = "cpu",
     ):
@@ -66,7 +78,7 @@ class HeightScoringPipeline:
     # @timeit
     def __call__(
         self, image: Image.Image, plane_fit_mask: torch.Tensor
-    ) -> torch.Tensor:
+    ) -> HeightScoringOutput:
         """
         Runs the height scoring pipeline on the image and returns the height
         score for each pixel in the image.
@@ -81,7 +93,8 @@ class HeightScoringPipeline:
             The height score for each pixel in the image. Dimensions: (H, W)
         """
         # Run depth anything
-        depth_z: torch.Tensor = self._model(x=image).squeeze(0, 1)  # Dimensions: (H, W)
+        depth_z: torch.Tensor = self._model(
+            x=image).squeeze(0, 1)  # Dimensions: (H, W)
 
         # Create pointcloud
         points: torch.Tensor = self._create_pointcloud(
@@ -104,8 +117,15 @@ class HeightScoringPipeline:
         )  # Dimensions: (H, W)
 
         # Calculate the height scores
-        height_scores: torch.Tensor = torch.sigmoid(
-            -(self._alpha * (zs - self._z_thresh))
-        )  # Dimensions: (H, W)
+        cond_z = zs >= 0
+        p_pos = p_trav(z=zs, alpha=self._alpha[1], z_thresh=self._z_thresh[1])
+        p_neg = p_trav(z=zs, alpha=-self._alpha[0], z_thresh=self._z_thresh[0])
+        height_scores = torch.where(cond_z, p_pos, p_neg)
 
-        return height_scores
+        return HeightScoringOutput(
+            depth_image=depth_z,
+            points=points,
+            plane_params=(a, b, c, d),
+            points_corrected=points_corrected,
+            scores=height_scores
+        )

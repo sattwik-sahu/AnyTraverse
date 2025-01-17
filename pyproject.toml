@@ -42,12 +42,26 @@ scikit-image = "^0.24.0"
 pydantic = "^2.9.2"
 pandas = "^2.2.3"
 easypyspin = "^2.0.1"
+fastapi = "^0.115.5"
+uvicorn = "^0.32.0"
+websockets = "^14.1"
+flax = "^0.10.2"
+streamlit = "^1.41.0"
+natsort = "^8.4.0"
+ftfy = "^6.3.1"
+regex = "^2024.11.6"
+tqdm = "^4.67.1"
+seaborn = "^0.13.2"
+ultralytics = "^8.3.56"
 
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.1.1"
 ruff = "^0.6.9"
 pytest = "^8.3.3"
+label-studio = "^1.15.0"
+pycocotools = "^2.0.8"
+datasets = "^3.2.0"
 
 [build-system]
 requires = ["poetry-core"]

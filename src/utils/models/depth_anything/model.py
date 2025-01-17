@@ -112,7 +112,7 @@ class DepthAnythingV2_MetricOutdoorLarge:
     _device: Literal["cpu", "cuda", "mps"]
 
     # @timeit
-    def __init__(self, device: Literal["cpu", "cuda", "mps"] = "cpu") -> None:
+    def __init__(self, device: Literal["cpu", "cuda", "mps"] | torch.device = "cpu") -> None:
         self._device = device
 
         self._processor = AutoImageProcessor.from_pretrained(
@@ -124,7 +124,8 @@ class DepthAnythingV2_MetricOutdoorLarge:
 
     # @timeit
     def __call__(self, x: Image) -> torch.Tensor:
-        x_tensor = self._processor(images=x, return_tensors="pt").to(self._device)
+        x_tensor = self._processor(
+            images=x, return_tensors="pt").to(self._device)
         type(x_tensor)
         with torch.no_grad():
             outputs = self._model(**x_tensor)

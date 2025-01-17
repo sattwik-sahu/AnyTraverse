@@ -14,6 +14,8 @@ def plot_clipseg_output(
 
     fig, ax = plt.subplots(nrows=1, ncols=len(prompts) + 1, figsize=(24, 16))
 
+    plt.tight_layout()
+
     ax[0].set_title("Image")
     ax[0].imshow(image)
 

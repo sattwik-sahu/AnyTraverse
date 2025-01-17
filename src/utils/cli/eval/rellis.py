@@ -11,7 +11,7 @@ from config.utils import (
 )
 from utils.models.clipseg.pooler import WeightedMaxPooler, ProbabilisticPooler
 from utils.helpers.plane_fit import PCAPlaneFitter
-from utils.data.rellis import RellisDataset
+from utils.datasets.rellis import RellisDataset
 from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -30,14 +30,14 @@ def run_eval(show_viz: bool = True):
     # Define the paths
     images_root = "/mnt/toshiba_hdd/datasets/rellis-3d/Rellis-3D-images/"
     masks_root = "/mnt/toshiba_hdd/datasets/rellis-3d/Rellis-3D-masks/"
-    paths_list_path = "/home/moonlab/Downloads/rellis-3d-splits/train.lst"
+    paths_list_path = "/mnt/toshiba_hdd/datasets/rellis-3d/splits/train.lst"
 
     # Create the dataloader
     rellis_dataloader = DataLoader(
         dataset=RellisDataset(
             images_root=images_root,
-            masks_root=masks_root,
             path_list_path=paths_list_path,
+            masks_root=masks_root,
         ),
         batch_size=1,
         shuffle=True,
@@ -45,7 +45,7 @@ def run_eval(show_viz: bool = True):
 
     # Define the pipeline
     fx, fy, cx, cy = 2813.643275, 2808.326079, 969.285772, 624.049972
-    device = (
+    device = torch.device(
         "cuda"
         if torch.cuda.is_available()
         else "mps"
@@ -60,7 +60,8 @@ def run_eval(show_viz: bool = True):
             ("dirt", 1.0),
         ],
         device=device,
-        height_scoring=HeightScoringConfig(alpha=30, z_thresh=0.1),
+        height_scoring=HeightScoringConfig(
+            alpha=(75, 30), z_thresh=(-0.1, 0.1)),
         plane_fitting=PlaneFittingConfig(
             fitter=PCAPlaneFitter(),
             trav_thresh=0.3,
@@ -100,14 +101,16 @@ def run_eval(show_viz: bool = True):
     with Progress() as progress:
         task = progress.add_task("Evaluating...", total=len(rellis_dataloader))
         for i, batch in enumerate(rellis_dataloader):
-            image_tensor, mask = batch["image"].squeeze(0), batch["mask"].squeeze(0)
+            image_tensor, mask = batch["image"].squeeze(
+                0), batch["mask"].squeeze(0)
             image = Image.fromarray(image_tensor.cpu().numpy())
             t0 = perf_counter()
-            pred_mask = pipeline(image=image) > threshold
+            pred_mask = pipeline(image=image).output > threshold
             t1 = perf_counter()
             t_inf.update(value=(t1 - t0) * 1e3)
 
-            iou = iou_score(y_true=mask.cpu().numpy(), y_pred=pred_mask.cpu().numpy())
+            iou = iou_score(y_true=mask.cpu().numpy(),
+                            y_pred=pred_mask.cpu().numpy())
             mean_iou.update(value=iou)
             progress.print(
                 {
