@@ -1,5 +1,15 @@
 from config.datasets import DatasetConfig
 from dataclasses import dataclass
+from config.pipeline_002 import CameraConfig
+
+
+fx, fy, cx, cy = 2813.643275, 2808.326079, 969.285772, 624.049972
+camera_config = CameraConfig(
+    fx=fx,
+    fy=fy,
+    cx=cx,
+    cy=cy
+)
 
 
 @dataclass
