@@ -52,6 +52,7 @@ ftfy = "^6.3.1"
 regex = "^2024.11.6"
 tqdm = "^4.67.1"
 seaborn = "^0.13.2"
+ultralytics = "^8.3.56"
 
 
 [tool.poetry.group.dev.dependencies]
