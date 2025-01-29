@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from utils.cli.human_op.models import DatasetVideo, DatasetVideosConfigModel
 
 
@@ -15,6 +16,6 @@ def get_video_path(dataset: DatasetVideo) -> Path:
             `dataset` enumerator value.
     """
     # Open the videos.json file
-    with open("videos.json", "r") as f:
+    with open("data/videos/list.json", "r") as f:
         videos = DatasetVideosConfigModel.model_validate_json(f.read()).videos
     return videos[dataset]

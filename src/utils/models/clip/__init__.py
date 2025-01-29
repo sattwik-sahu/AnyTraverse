@@ -53,8 +53,11 @@ class CLIP:
             return cosine_similarity(x1=emb1, x2=emb2)
 
     def _get_embedding(self, image: Image.Image) -> torch.Tensor:
+        preprocessed_image: torch.Tensor = (
+            self._preprocess(img=image).unsqueeze(0).to(self._device) # type: ignore
+        ) 
         with torch.no_grad():
-            return self._model.encode_image(image=image)
+            return self._model.encode_image(image=preprocessed_image)
 
     def __call__(self, image: Image.Image) -> torch.Tensor:
         return self._get_embedding(image=image)

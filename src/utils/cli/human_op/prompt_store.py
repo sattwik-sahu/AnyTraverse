@@ -1,11 +1,12 @@
-import torch
-from PIL import Image
-from config.utils import WeightedPrompt
 from typing import List, Tuple, TypedDict
-from utils.models.clip import CLIP
-import numpy as np
-from numpy import typing as npt
 
+import numpy as np
+import torch
+from numpy import typing as npt
+from PIL import Image
+
+from config.utils import WeightedPrompt
+from utils.models.clip import CLIP
 
 WeightedPromptList = List[WeightedPrompt]
 
@@ -26,6 +27,7 @@ class ScenePromptStoreManager:
 
     def __init__(self) -> None:
         self._store = []
+        self._clip = CLIP(device=torch.device("cuda"))
 
     @property
     def scene_embeddings(self) -> torch.Tensor:
