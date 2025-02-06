@@ -12,8 +12,8 @@ class PlaneFittingConfig:
 
 @dataclass
 class HeightScoringConfig:
-    z_thresh: float
-    alpha: float
+    z_thresh: Tuple[float, float]
+    alpha: Tuple[float, float]
 
 
 @dataclass

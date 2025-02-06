@@ -15,10 +15,10 @@ from config.utils import (
     HeightScoringConfig,
     PlaneFittingConfig,
 )
-from utils.data.deepscene import DeepsceneDataset
+from utils.datasets.deepscene import DeepsceneDataset
 from utils.helpers.plane_fit import PCAPlaneFitter
 from utils.metrics.iou import iou_score
-from utils.models.clipseg.pooler import WeightedMaxPooler
+from utils.models.clipseg.pooler import WeightedMaxPooler, ProbabilisticPooler
 from utils.pipelines.pipeline_002 import Pipeline2
 from utils.viz.pipeline import plot_anytraverse_output
 
@@ -50,9 +50,9 @@ def run_eval(show_viz: bool = True):
     )
     config = PipelineConfig(
         camera=CameraConfig(fx=fx, fy=fy, cx=cx, cy=cy),
-        prompts=[("grass", 1.0), ("bush", -1.0), ("path", 1.0), ("water", -1.0)],
+        prompts=[("grass", 1.0), ("bush", -1.0), ("road", 1.0), ("water", -1.0)],
         device=device,
-        height_scoring=HeightScoringConfig(alpha=30, z_thresh=0.2),
+        height_scoring=HeightScoringConfig(alpha=(80, 30), z_thresh=(-0.1, 0.2)),
         plane_fitting=PlaneFittingConfig(
             fitter=PCAPlaneFitter(),
             trav_thresh=0.5,
