@@ -61,6 +61,11 @@ class LoopbackLogModel(BaseModel):
 class LoopbackLogsModel(BaseModel):
     logs: List[LoopbackLogModel]
 
+
+class ImageEmbeddings(Enum):
+    CLIP = "CLIP (Radford et al.)"
+    SigLIP = "SigLIP (Zhai et al.)"
+
 # log1 = HumanOperatorCallLog(
 #     video=DatasetVideo.RUGD_CREEK,
 #     ref_sim_score=0.4,

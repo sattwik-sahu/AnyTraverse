@@ -19,7 +19,6 @@ from utils.cli.human_op.io import (
     save_log,
 )
 from utils.cli.human_op.models import (
-    # engine as db_engine,
     DatasetVideo,
     DriveStatus,
     HumanOperatorCallLog,
@@ -32,13 +31,14 @@ from utils.cli.human_op.prompt_store import (
     ScenePromptStoreManager,
     SceneWeightedPrompt,
 )
+from utils.cli.human_op.video import get_video_path
+from utils.helpers.human_op.prompts import Prompts, update_prompts
 from utils.metrics.roi import ROI_Checker
+from utils.models import ImageEmbeddingModel
 from utils.models.clip import CLIP
 from utils.pipelines.pipeline_002 import Pipeline2 as Pipeline
 from utils.pipelines.streaming import create_pipeline
 from utils.viz.roi import plot_image_seg_roi
-from utils.helpers.human_op.prompts import update_prompts, Prompts
-from utils.cli.human_op.video import get_video_path
 
 
 class HumanOperatorController:
@@ -54,16 +54,17 @@ class HumanOperatorController:
     _roi: ROI_Checker
     _fig: Figure
     _ax: List[Axes]
-    _clip: CLIP
     _thresholds: Thresholds
     _n_frames_skip: int
     _drive_status: DriveStatus
+    _image_embedding_model: ImageEmbeddingModel
 
     def __init__(
         self,
         video: DatasetVideo,
         video_path: Path,
         console: Console,
+        image_embedding_model: ImageEmbeddingModel,
         roi_thresh: float = 0.5,
         ref_sim_thresh: float = 0.9,
         seg_thresh: float = 0.25,
@@ -73,7 +74,6 @@ class HumanOperatorController:
         self._console = console
         self._n_frames_skip = n_frames_skip
         self._capture = cv2.VideoCapture(video_path.as_posix())
-        self._prompt_store = ScenePromptStoreManager()
         self._inx = 0
         self._to_pil = ToPILImage()
         self._frame = self._read_next_frame()  # type: ignore
@@ -89,10 +89,11 @@ class HumanOperatorController:
         console.print(
             "Initialized [bold light_green]AnyTraverse[/] pipeline successfully!"
         )
-
-        with console.status("Initializing CLIP embedding model..."):
-            self._clip = CLIP(device=torch.device("cuda"))
-        console.print("Initialized [bold cyan]CLIP[/] embedding model successfully!")
+        
+        self._image_embedding_model = image_embedding_model
+        self._prompt_store = ScenePromptStoreManager(
+            image_embedding_model=self._image_embedding_model
+        )
 
         # Create the figure are show on screen
         self._setup_plot()
@@ -172,7 +173,7 @@ class HumanOperatorController:
         scene_prompt = SceneWeightedPrompt(
             scene=Scene(
                 ref_frame=self._frame,
-                ref_frame_embedding=self._clip(image=self._frame),
+                ref_frame_embedding=self._image_embedding_model(x=self._frame),
             ),
             prompts=prompts,
         )
@@ -196,9 +197,13 @@ class HumanOperatorController:
         Gets the similarity score of the current frame with the scene
         reference frame.
         """
-        return self._clip.get_similarity(
-            image1=self._curr_scene_prompt["scene"]["ref_frame"],
-            image2=self._frame,
+        return float(
+            torch.cosine_similarity(
+                x1=self._image_embedding_model(
+                    x=self._curr_scene_prompt["scene"]["ref_frame"]
+                ),
+                x2=self._image_embedding_model(x=self._frame),
+            ).item()
         )
 
     def _read_single_frame(self) -> Image.Image | None:
@@ -380,7 +385,7 @@ class HumanOperatorController:
                 self._curr_scene_prompt = SceneWeightedPrompt(
                     scene=Scene(
                         ref_frame=self._frame,
-                        ref_frame_embedding=self._clip(self._frame),
+                        ref_frame_embedding=self._image_embedding_model(self._frame),
                     ),
                     prompts=self.help_me_mommy(),
                 )

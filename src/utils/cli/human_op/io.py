@@ -2,6 +2,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Tuple, Type, TypeVar
 
+import torch
 from rich.console import Console
 from rich.prompt import Confirm, FloatPrompt, IntPrompt, Prompt
 from rich.table import Table
@@ -11,15 +12,21 @@ from utils.cli.human_op.models import (
     DatasetVideo,
     HumanOperatorCallLog,
     HumanOperatorCallLogs,
+    ImageEmbeddings,
     Thresholds,
 )
 from utils.cli.human_op.video import get_video_path
+from utils.models import ImageEmbeddingModel
+from utils.models.clip import CLIP
+from utils.models.siglip import SigLIP
 
 # Define a type variable for the enum class
 EnumT = TypeVar("EnumT", bound=Enum)
 
 
-def display_menu_and_get_selection(enum_class: Type[EnumT]) -> EnumT:
+def display_menu_and_get_selection(
+    enum_class: Type[EnumT], prompt: str = "Menu"
+) -> EnumT:
     """
     Displays a simple menu using the rich library and gets the selected item from the user.
 
@@ -32,7 +39,7 @@ def display_menu_and_get_selection(enum_class: Type[EnumT]) -> EnumT:
     console = Console()
 
     # Display the menu title
-    console.print("[bold magenta]Menu[/bold magenta]", justify="center")
+    console.print(f"[bold magenta]{prompt}[/bold magenta]", justify="center")
 
     # Display each enum member as a menu item
     for index, member in enumerate(enum_class, start=1):
@@ -53,6 +60,21 @@ def display_menu_and_get_selection(enum_class: Type[EnumT]) -> EnumT:
 def select_video_from_menu() -> Tuple[DatasetVideo, Path]:
     video: DatasetVideo = display_menu_and_get_selection(enum_class=DatasetVideo)
     return video, get_video_path(dataset=video)
+
+
+def get_image_embedding_model(console: Console = Console()) -> Tuple[ImageEmbeddingModel, ImageEmbeddings]:
+    """
+    Ask the user for which image embedding model to use.
+    """
+    model_choice: ImageEmbeddings = display_menu_and_get_selection(
+        enum_class=ImageEmbeddings, prompt="Which image embedding model to use?"
+    )
+    with console.status(f"Loading embedding model {model_choice.value}..."):
+        if model_choice is ImageEmbeddings.CLIP:
+            model: ImageEmbeddingModel = CLIP(device=torch.device("cuda"))
+        else:
+            model: ImageEmbeddingModel = SigLIP(device=torch.device("cuda"))
+    return model, model_choice
 
 
 def select_thresholds() -> Thresholds:
@@ -120,6 +142,7 @@ def save_log(log: HumanOperatorCallLog) -> None:
     logs.logs.append(log)
     with open("data/logs/human-op.json", "w") as f:
         f.write(logs.model_dump_json())
+
 
 def video_list_table() -> Table:
     table = Table(title="Available Videos")

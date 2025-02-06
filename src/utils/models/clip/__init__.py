@@ -1,13 +1,16 @@
+from typing import Callable
+
+import clip
 import clip.model
 import torch
-import clip
 from PIL import Image
 from torchvision.transforms import Compose
-from typing import Callable
+
 from utils.metrics.cosine import cosine_similarity
+from utils.models import ImageEmbeddingModel
 
 
-class CLIP:
+class CLIP(ImageEmbeddingModel):
     """
     Class for the CLIP image and text embedding model.
     """
@@ -17,8 +20,8 @@ class CLIP:
     _preprocess: Compose
 
     def __init__(self, device: torch.device = torch.device("cuda")) -> None:
-        self._device = device
-        self._model, self._preprocess = clip.load("ViT-B/32", device=device)
+        super().__init__(device=device)
+        self._model, self._preprocess = clip.load("ViT-B/32", device=self._device)
 
     def _preprocess_image(self, image: Image.Image) -> torch.Tensor:
         return self._preprocess(image).unsqueeze(0).to(device=self._device)  # type: ignore
@@ -54,10 +57,10 @@ class CLIP:
 
     def _get_embedding(self, image: Image.Image) -> torch.Tensor:
         preprocessed_image: torch.Tensor = (
-            self._preprocess(img=image).unsqueeze(0).to(self._device) # type: ignore
-        ) 
+            self._preprocess(img=image).unsqueeze(0).to(self._device)  # type: ignore
+        )
         with torch.no_grad():
             return self._model.encode_image(image=preprocessed_image)
 
-    def __call__(self, image: Image.Image) -> torch.Tensor:
-        return self._get_embedding(image=image)
+    def __call__(self, x: Image.Image) -> torch.Tensor:
+        return self._get_embedding(image=x)

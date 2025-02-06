@@ -34,8 +34,7 @@ class CLIPSeg:
     ) -> Tuple[Image, CLIPSegInputEncoded]:
         if isinstance(image, Path) or isinstance(image, str):
             image = open_image(image)
-        image_resized = image.resize(
-            size=(224, 224), resample=Resampling.LANCZOS)
+        image_resized = image.resize(size=(224, 224), resample=Resampling.LANCZOS)
         images: List[Image] = [image_resized] * len(prompts)
         x = self._processor(
             text=prompts, images=images, return_tensors="pt", padding=True

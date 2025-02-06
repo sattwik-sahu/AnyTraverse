@@ -15,7 +15,7 @@ def overlay_image(
     alpha: float = 0.5,
     figsize: Tuple[int, int] = (16, 12),
     threshold: float = 0.5
-) -> Tuple[Figure, Axes]:
+) -> Tuple[Figure, List[Axes]]:
     fig, ax = plt.subplots(nrows=1, ncols=3, figsize=figsize)
 
     ax[0].set_title(f"Image {'x'.join(map(str, image.size))}")

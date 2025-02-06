@@ -1,4 +1,9 @@
+
+# Keep log files
+!data/logs/
+!data/logs/
 data/
+
 tests/
 notebooks/
 ### Python ###

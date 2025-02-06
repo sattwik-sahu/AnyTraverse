@@ -8,6 +8,8 @@ from PIL import Image
 from config.utils import WeightedPrompt
 from utils.models.clip import CLIP
 
+from utils.models import ImageEmbeddingModel
+
 WeightedPromptList = List[WeightedPrompt]
 
 
@@ -23,11 +25,15 @@ class SceneWeightedPrompt(TypedDict):
 
 class ScenePromptStoreManager:
     _store: List[SceneWeightedPrompt]
-    _clip: CLIP
+    _image_embedding_model: ImageEmbeddingModel
 
-    def __init__(self) -> None:
+    def __init__(
+        self, image_embedding_model: ImageEmbeddingModel | None = None
+    ) -> None:
         self._store = []
-        self._clip = CLIP(device=torch.device("cuda"))
+        self._image_embedding_model = image_embedding_model or CLIP(
+            device=torch.device("cuda")
+        )
 
     @property
     def scene_embeddings(self) -> torch.Tensor:
@@ -40,7 +46,7 @@ class ScenePromptStoreManager:
             self._store.append(scene_prompt)
 
     def _get_similarities(self, frame: Image.Image) -> torch.Tensor:
-        frame_embedding: torch.Tensor = self._clip(image=frame)
+        frame_embedding: torch.Tensor = self._image_embedding_model(x=frame)
         return torch.cosine_similarity(x1=frame_embedding, x2=self.scene_embeddings)
 
     def get_best_match(self, frame: Image.Image) -> Tuple[SceneWeightedPrompt, float]:
