@@ -10,7 +10,7 @@ from rich.table import Table
 from config.utils import WeightedPrompt
 from utils.cli.human_op.models import (
     DatasetVideo,
-    HumanOperatorCallLog,
+    HumanOperatorCallLogModel,
     HumanOperatorCallLogs,
     ImageEmbeddings,
     Thresholds,
@@ -136,7 +136,7 @@ def op_call_req_confirm(console: Console = Console()) -> bool:
     )
 
 
-def save_log(log: HumanOperatorCallLog) -> None:
+def save_log(log: HumanOperatorCallLogModel) -> None:
     with open("data/logs/human-op.json", "r") as f:
         logs = HumanOperatorCallLogs.model_validate_json(f.read())
     logs.logs.append(log)

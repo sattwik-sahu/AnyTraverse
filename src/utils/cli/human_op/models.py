@@ -27,6 +27,7 @@ class DriveStatus(Enum):
     OK = "ok"
     BAD_ROI = "bad_roi"
     UNSEEN_SCENE = "unseen_scene"
+    UNK_ROI_OBJ = "unk_roi_obj"
 
 
 class Thresholds(TypedDict):
@@ -35,7 +36,7 @@ class Thresholds(TypedDict):
     seg: float
 
 
-class HumanOperatorCallLog(BaseModel):
+class HumanOperatorCallLogModel(BaseModel):
     # id: Optional[int] = Field(default=None, primary_key=True)
     video: DatasetVideo
     frame_inx: int
@@ -49,7 +50,7 @@ class HumanOperatorCallLog(BaseModel):
     hist_used_succ: bool
 
 class HumanOperatorCallLogs(BaseModel):
-    logs: List[HumanOperatorCallLog]
+    logs: List[HumanOperatorCallLogModel]
 
 
 class LoopbackLogModel(BaseModel):

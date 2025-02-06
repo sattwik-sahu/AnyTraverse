@@ -21,7 +21,7 @@ from utils.cli.human_op.io import (
 from utils.cli.human_op.models import (
     DatasetVideo,
     DriveStatus,
-    HumanOperatorCallLog,
+    HumanOperatorCallLogModel,
     LoopbackLogModel,
     LoopbackLogsModel,
     Thresholds,
@@ -39,6 +39,10 @@ from utils.models.clip import CLIP
 from utils.pipelines.pipeline_002 import Pipeline2 as Pipeline
 from utils.pipelines.streaming import create_pipeline
 from utils.viz.roi import plot_image_seg_roi
+from utils.helpers.human_op.uncertainty import (
+    UncertaintyChecker,
+    ProbabilisticUncertaintyChecker,
+)
 
 
 class HumanOperatorController:
@@ -58,6 +62,7 @@ class HumanOperatorController:
     _n_frames_skip: int
     _drive_status: DriveStatus
     _image_embedding_model: ImageEmbeddingModel
+    _uncertainty_checker: UncertaintyChecker
 
     def __init__(
         self,
@@ -80,6 +85,10 @@ class HumanOperatorController:
         self._roi = ROI_Checker(
             x_bounds=(0.33, 0.67), y_bounds=(0.67, 1.00), device=torch.device("cuda")
         )
+
+        # TODO Make this generalizable to different types of checkers
+        self._uncertainty_checker = ProbabilisticUncertaintyChecker(roi=self._roi)
+
         self._thresholds = Thresholds(
             ref_sim=ref_sim_thresh, roi=roi_thresh, seg=seg_thresh
         )
@@ -89,7 +98,7 @@ class HumanOperatorController:
         console.print(
             "Initialized [bold light_green]AnyTraverse[/] pipeline successfully!"
         )
-        
+
         self._image_embedding_model = image_embedding_model
         self._prompt_store = ScenePromptStoreManager(
             image_embedding_model=self._image_embedding_model
@@ -392,7 +401,7 @@ class HumanOperatorController:
 
             if log_required:
                 # Create the data structure to log
-                log = HumanOperatorCallLog(
+                log = HumanOperatorCallLogModel(
                     frame_inx=self._inx,
                     human_op_call_req=human_op_call_required,
                     human_op_call_type=self._drive_status,
