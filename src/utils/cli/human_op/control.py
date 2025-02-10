@@ -384,12 +384,6 @@ class HumanOperatorController:
             self._scene_similarities.append(ref_sim_score)
 
             with self._console.status(f"Plotting frame {self._inx}"):
-                self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(
-                    self._drive_status is DriveStatus.UNK_ROI_OBJ
-                )
-                self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(
-                    self._drive_status is DriveStatus.UNSEEN_SCENE
-                )
                 self._show_image_seg_roi_plot(
                     trav_mask=pooled_trav_mask,
                     unc_mask=self._uncertainty_checker._get_uncertainty_mask(
@@ -489,15 +483,13 @@ class HumanOperatorController:
                     hist_used_succ=hist_used_succ,
                 )
                 save_log(log=log)
-                if self._drive_status is DriveStatus.UNK_ROI_OBJ:
-                    self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(True)
-                else:
-                    self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(False)
 
-                if self._drive_status is DriveStatus.UNSEEN_SCENE:
-                    self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(True)
-                else:
-                    self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(False)
+                self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(
+                    self._drive_status is DriveStatus.UNK_ROI_OBJ
+                )
+                self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(
+                    self._drive_status is DriveStatus.UNSEEN_SCENE
+                )
 
             print("=" * 40, end="\n\n\n")
             self._inx += self._n_frames_skip

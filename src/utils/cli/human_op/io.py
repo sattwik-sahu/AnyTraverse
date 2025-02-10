@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Type, TypeVar
 
 import torch
 from rich.console import Console
-from rich.prompt import Confirm, FloatPrompt, IntPrompt, Prompt
+from rich.prompt import Confirm, FloatPrompt, Prompt
 from rich.table import Table
 
 from config.utils import WeightedPrompt
@@ -164,8 +164,13 @@ def get_history_pickle_path(video: DatasetVideo, console: Console = Console()) -
     console.print(
         "[magenta]NOTE[/] [dim]Username can contain only numbers and alphabets, no special characters or spaces allowed.[/]"
     )
-    name: str = Prompt.ask("Human operator username")
-    assert name.isalnum(), f"Username should be an alphanumeric string, got `{name}`"
+    while True:
+        try:
+            name: str = Prompt.ask("Human operator username")
+            assert name.isalnum(), f"Username should be an alphanumeric string, got `{name}`"
+            break
+        except AssertionError:
+            console.print("Please enter your username correctly...", style="dim red")
 
     # Create the file
     filepath = (
