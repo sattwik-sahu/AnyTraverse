@@ -1,12 +1,25 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict
-
+from typing import Dict, List, TypedDict
+from datetime import datetime
 from pydantic import BaseModel
-
+from dataclasses import dataclass
 from config.utils import WeightedPrompt
+import torch
+from PIL import Image
 
-# from sqlmodel import SQLModel, create_engine, MetaData, Field
+
+WeightedPromptList = List[WeightedPrompt]
+
+
+class Scene(TypedDict):
+    ref_frame: Image.Image
+    ref_frame_embedding: torch.Tensor
+
+
+class SceneWeightedPrompt(TypedDict):
+    scene: Scene
+    prompts: WeightedPromptList
 
 
 class DatasetVideo(Enum):
@@ -27,29 +40,33 @@ class DriveStatus(Enum):
     OK = "ok"
     BAD_ROI = "bad_roi"
     UNSEEN_SCENE = "unseen_scene"
+    UNK_ROI_OBJ = "unk_roi_obj"
 
 
 class Thresholds(TypedDict):
     ref_sim: float
-    roi: float
+    roi_unc: float
     seg: float
 
 
-class HumanOperatorCallLog(BaseModel):
+class HumanOperatorCallLogModel(BaseModel):
     # id: Optional[int] = Field(default=None, primary_key=True)
     video: DatasetVideo
     frame_inx: int
     ref_sim_score: float
     trav_roi: float
+    unc_roi: float
     thresh: Thresholds
     human_op_called: bool
     human_op_call_req: bool
     human_op_call_type: DriveStatus | None = None
     prompts: List[WeightedPrompt]
     hist_used_succ: bool
+    timestamp: datetime = datetime.now()
+
 
 class HumanOperatorCallLogs(BaseModel):
-    logs: List[HumanOperatorCallLog]
+    logs: List[HumanOperatorCallLogModel]
 
 
 class LoopbackLogModel(BaseModel):
@@ -65,6 +82,13 @@ class LoopbackLogsModel(BaseModel):
 class ImageEmbeddings(Enum):
     CLIP = "CLIP (Radford et al.)"
     SigLIP = "SigLIP (Zhai et al.)"
+
+
+@dataclass
+class HistoryPickle:
+    image_embeddings: ImageEmbeddings
+    scene_prompts_store: List[SceneWeightedPrompt]
+
 
 # log1 = HumanOperatorCallLog(
 #     video=DatasetVideo.RUGD_CREEK,
