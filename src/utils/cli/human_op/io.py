@@ -19,6 +19,8 @@ from utils.cli.human_op.video import get_video_path
 from utils.models import ImageEmbeddingModel
 from utils.models.clip import CLIP
 from utils.models.siglip import SigLIP
+from pathlib import Path
+from datetime import datetime
 
 # Define a type variable for the enum class
 EnumT = TypeVar("EnumT", bound=Enum)
@@ -62,7 +64,9 @@ def select_video_from_menu() -> Tuple[DatasetVideo, Path]:
     return video, get_video_path(dataset=video)
 
 
-def get_image_embedding_model(console: Console = Console()) -> Tuple[ImageEmbeddingModel, ImageEmbeddings]:
+def get_image_embedding_model(
+    console: Console = Console(),
+) -> Tuple[ImageEmbeddingModel, ImageEmbeddings]:
     """
     Ask the user for which image embedding model to use.
     """
@@ -84,7 +88,9 @@ def select_thresholds() -> Thresholds:
             default=0.9,
             show_default=True,
         ),
-        roi=FloatPrompt.ask("Threshold for ROI", default=0.5, show_default=True),
+        roi_unc=FloatPrompt.ask(
+            "Threshold for ROI uncertainty", default=0.5, show_default=True
+        ),
         seg=FloatPrompt.ask("Segmentation threshold", default=0.25, show_default=True),
     )
 
@@ -151,3 +157,19 @@ def video_list_table() -> Table:
     for dv in DatasetVideo:
         table.add_row(dv.name, get_video_path(dv).as_posix())
     return table
+
+
+def get_history_pickle_path(video: DatasetVideo, console: Console = Console()) -> Path:
+    # Ask the user's name
+    console.print(
+        "[magenta]NOTE[/] [dim]Username can contain only numbers and alphabets, no special characters or spaces allowed.[/]"
+    )
+    name: str = Prompt.ask("Human operator username")
+    assert name.isalnum(), f"Username should be an alphanumeric string, got `{name}`"
+
+    # Create the file
+    filepath = (
+        Path("data/logs")
+        / f"history_{video.name}_{name}_{datetime.now().strftime("%Y%m%d%H%M%S")}.pkl"
+    )
+    return filepath

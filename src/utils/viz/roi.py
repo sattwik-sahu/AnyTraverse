@@ -1,7 +1,9 @@
+from typing import Tuple
 from matplotlib.patches import Rectangle
 from matplotlib.axes import Axes
 from utils.metrics.roi import ROI_Checker
 from PIL import Image
+from utils.viz.common import overlay_mask_cv2
 import torch
 
 
@@ -48,7 +50,7 @@ def plot_roi_on_axes(
         facecolor="none",  # No fill
         linestyle=linestyle,  # Border style
         alpha=alpha,  # Transparency
-        label=label
+        label=label,
     )
 
     # Add the rectangle to the axis
@@ -61,21 +63,26 @@ def plot_image_seg_roi(
     mask: torch.Tensor,
     threshold: float,
     roi: ROI_Checker,
-    title: str,
+    title: str | None = None,
     cmap: str = "jet",
     edgecolor: str = "cyan",
     linewidth: int = 2,
     mask_alpha: float = 0.25,
     roi_alpha: float = 0.9,
+    msg: str = "Mask",
+    color: Tuple[int, int, int] = (0, 255, 0),
 ):
     # Plot Image
-    ax.imshow(image)
+    # ax.imshow(image)
 
     # Calculate ROI traversability
     thresh_mask = mask.cpu() > threshold
 
     # Plot segmentation mask
-    ax.imshow(thresh_mask.cpu().numpy() > threshold, cmap=cmap, alpha=mask_alpha)
+    # ax.imshow(thresh_mask.cpu().numpy() > threshold, cmap=cmap, alpha=mask_alpha)
+    ax.imshow(
+        overlay_mask_cv2(image=image, mask=thresh_mask, alpha=mask_alpha, color=color)
+    )
 
     # Plot ROI box
     (xs, xe), (ys, ye) = roi._get_roi_bounds_in_pixels(mask=mask)
@@ -95,7 +102,7 @@ def plot_image_seg_roi(
     ax.text(
         x=30,
         y=100,
-        s=f"Traversability in ROI = {trav_roi * 100 :.2f}%",
+        s=f"{msg} in ROI = {trav_roi * 100 :.2f}%",
         color=edgecolor,
         backgroundcolor="#0b2e3cde",
         family="monospace",
@@ -104,4 +111,5 @@ def plot_image_seg_roi(
     )
 
     # Show title on axes
-    ax.set_title(label=title)
+    if title is not None:
+        ax.set_title(label=title)

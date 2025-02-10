@@ -1,19 +1,23 @@
+import json
 from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
 import numpy as np
+import seaborn as sns
 import torch
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from PIL import Image
 from rich.console import Console
+from rich.panel import Panel
 from torchvision.transforms import ToPILImage
 
 from config.utils import WeightedPrompt
 from utils.cli.human_op.io import (
     dict_to_table,
+    get_history_pickle_path,
     get_prompts,
     op_call_req_confirm,
     save_log,
@@ -25,24 +29,23 @@ from utils.cli.human_op.models import (
     LoopbackLogModel,
     LoopbackLogsModel,
     Thresholds,
-)
-from utils.cli.human_op.prompt_store import (
     Scene,
-    ScenePromptStoreManager,
     SceneWeightedPrompt,
 )
+from utils.cli.human_op.prompt_store import ScenePromptStoreManager
 from utils.cli.human_op.video import get_video_path
 from utils.helpers.human_op.prompts import Prompts, update_prompts
+from utils.helpers.human_op.uncertainty import (
+    ProbabilisticUncertaintyChecker,
+    UncertaintyChecker,
+)
 from utils.metrics.roi import ROI_Checker
 from utils.models import ImageEmbeddingModel
-from utils.models.clip import CLIP
 from utils.pipelines.pipeline_002 import Pipeline2 as Pipeline
+from utils.pipelines.pipeline_002 import PipelineOutput
 from utils.pipelines.streaming import create_pipeline
+from utils.viz.human_op import HumanOperatorUI_Axes, get_human_op_ui_axes
 from utils.viz.roi import plot_image_seg_roi
-from utils.helpers.human_op.uncertainty import (
-    UncertaintyChecker,
-    ProbabilisticUncertaintyChecker,
-)
 
 
 class HumanOperatorController:
@@ -57,12 +60,14 @@ class HumanOperatorController:
     _console: Console
     _roi: ROI_Checker
     _fig: Figure
-    _ax: List[Axes]
+    _ax: HumanOperatorUI_Axes
     _thresholds: Thresholds
     _n_frames_skip: int
     _drive_status: DriveStatus
     _image_embedding_model: ImageEmbeddingModel
     _uncertainty_checker: UncertaintyChecker
+    _hoc_progression: Dict[DriveStatus, List[bool]]
+    _scene_similarities: List[float]
 
     def __init__(
         self,
@@ -70,7 +75,7 @@ class HumanOperatorController:
         video_path: Path,
         console: Console,
         image_embedding_model: ImageEmbeddingModel,
-        roi_thresh: float = 0.5,
+        roi_unc_thresh: float = 0.5,
         ref_sim_thresh: float = 0.9,
         seg_thresh: float = 0.25,
         n_frames_skip: int = 0,
@@ -86,11 +91,17 @@ class HumanOperatorController:
             x_bounds=(0.33, 0.67), y_bounds=(0.67, 1.00), device=torch.device("cuda")
         )
 
+        self._hoc_progression = {
+            DriveStatus.UNK_ROI_OBJ: [],
+            DriveStatus.UNSEEN_SCENE: [],
+        }
+        self._scene_similarities = []
+
         # TODO Make this generalizable to different types of checkers
         self._uncertainty_checker = ProbabilisticUncertaintyChecker(roi=self._roi)
 
         self._thresholds = Thresholds(
-            ref_sim=ref_sim_thresh, roi=roi_thresh, seg=seg_thresh
+            ref_sim=ref_sim_thresh, roi_unc=roi_unc_thresh, seg=seg_thresh
         )
 
         with console.status("Initializing pipeline..."):
@@ -112,6 +123,10 @@ class HumanOperatorController:
 
         # Set drive status OK
         self._drive_status = DriveStatus.OK
+
+    @property
+    def prompts_hist_store(self) -> List[SceneWeightedPrompt]:
+        return self._prompt_store._store
 
     def help_me_mommy(self) -> Prompts:
         """
@@ -141,38 +156,77 @@ class HumanOperatorController:
         else:
             return None
 
-    def _show_image_seg_roi_plot(self, mask: torch.Tensor) -> None:
+    def _show_image_seg_roi_plot(
+        self, trav_mask: torch.Tensor, unc_mask: torch.Tensor
+    ) -> None:
         self._reset_plot()
 
-        self._ax[0].set_title("Current Scene Reference Frame")
-        self._ax[1].set_title(f"Current Frame (index: {self._inx + 1})")
+        # self._ax[0].set_title("Current Scene Reference Frame")
+        # self._ax[1].set_title(f"Current Frame (index: {self._inx + 1})")
 
-        self._ax[0].imshow(self._curr_scene_prompt["scene"]["ref_frame"])
-        self._ax[1].imshow(self._frame)
+        self._ax.ref_frame.imshow(self._curr_scene_prompt["scene"]["ref_frame"])
+        self._ax.curr_frame.imshow(self._frame)
 
+        # Traversability Map
         plot_image_seg_roi(
-            ax=self._ax[2],
+            ax=self._ax.trav_map,
             image=self._frame,
-            mask=mask,
+            mask=trav_mask,
             threshold=self._thresholds["seg"],
             roi=self._roi,
-            title="AnyTraverse Output",
+            msg="Traversability",
+            color=(95, 214, 127),
         )
+
+        # Uncertainty Map
+        plot_image_seg_roi(
+            ax=self._ax.unc_map,
+            image=self._frame,
+            mask=unc_mask,
+            threshold=self._thresholds["roi_unc"],
+            roi=self._roi,
+            msg="Uncertainty",
+            color=(202, 5, 77),
+        )
+
+        # HOC Progression
+        self._ax.hoc.stairs(
+            np.cumsum(self._hoc_progression[DriveStatus.UNK_ROI_OBJ]),
+            label="Unknown Object",
+        )
+        self._ax.hoc.stairs(
+            np.cumsum(self._hoc_progression[DriveStatus.UNSEEN_SCENE]),
+            label="Unseen Scene",
+        )
+        self._ax.hoc.stairs(
+            np.logical_or(
+                self._hoc_progression[DriveStatus.UNK_ROI_OBJ],
+                self._hoc_progression[DriveStatus.UNSEEN_SCENE],
+            ).cumsum(),
+            linestyle="dashdot",
+            label="Combined HOC",
+        )
+
+        self._ax.hoc.legend()
+
+        # Plot ref scene sim dist
+        if len(self._scene_similarities) > 3:
+            g_sc = sns.histplot(data=np.array(self._scene_similarities), kde=True)
+            g_sc.axvline(self._thresholds["ref_sim"])
 
     def _setup_plot(self) -> None:
         plt.ion()
-        self._fig, self._ax = plt.subplots(nrows=1, ncols=3, figsize=(24, 8))
+        self._fig, self._ax = get_human_op_ui_axes()
         self._fig.show()
 
     def _reset_plot(self) -> None:
-        for ax in self._ax:
-            ax.clear()
+        self._ax.reset()
 
     def _setup_initial_prompts(self) -> None:
         # Show frame
         self._reset_plot()
-        self._ax[0].imshow(self._frame)
-        self._ax[0].set_title("Frame")
+        self._ax.curr_frame.imshow(self._frame)
+        # self._ax[0].set_title("Frame")
 
         # Get prompts
         prompts: List[WeightedPrompt] = get_prompts()
@@ -195,11 +249,11 @@ class HumanOperatorController:
         table = dict_to_table(kv={k: str(v) for k, v in kv.items()})
         self._console.print(table)
 
-    def _get_curr_frame_attn_map(self) -> torch.Tensor:
+    def _anytraverse_on_current_frame(self) -> PipelineOutput:
         # Set the prompts
         self._pipeline.prompts = self._curr_scene_prompt["prompts"]
         # Run the pipeline
-        return self._pipeline(image=self._frame).output
+        return self._pipeline(image=self._frame)
 
     def _get_ref_frame_sim_score(self) -> float:
         """
@@ -261,9 +315,9 @@ class HumanOperatorController:
                 # Scene change?
                 if best_match_ref_sim < self._thresholds["ref_sim"]:
                     video_log.scene_change_calls.append(self._inx)
-                # Low ROI?
-                if trav_roi < self._thresholds["roi"]:
-                    video_log.roi_calls.append(self._inx)
+                # # Low ROI?
+                # if trav_roi < self._thresholds["roi"]:
+                #     video_log.roi_calls.append(self._inx)
 
                 # Update frame counter
                 self._inx += 1
@@ -313,25 +367,49 @@ class HumanOperatorController:
             )
 
             # Get AnyTraverse output and ROI trav
-            mask: torch.Tensor = self._get_curr_frame_attn_map()
-            thresh_mask: torch.Tensor = mask > self._thresholds["seg"]
+            anytraverse_output: PipelineOutput = self._anytraverse_on_current_frame()
+
+            # Get the masks
+            trav_masks: torch.Tensor = anytraverse_output.trav_masks
+            pooled_trav_mask: torch.Tensor = anytraverse_output.output
+
+            thresh_mask: torch.Tensor = pooled_trav_mask > self._thresholds["seg"]
+
+            # ROI calculations
             trav_roi: float = self._roi.trav_area(mask=thresh_mask)
+            unc_roi: float = self._uncertainty_checker.roi_uncertainty(masks=trav_masks)
+
+            # Calculate current frame vs. scene ref frame similarity
+            ref_sim_score: float = self._get_ref_frame_sim_score()
+            self._scene_similarities.append(ref_sim_score)
 
             with self._console.status(f"Plotting frame {self._inx}"):
-                self._show_image_seg_roi_plot(mask=mask)
-
-            ref_sim_score: float = self._get_ref_frame_sim_score()
+                self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(
+                    self._drive_status is DriveStatus.UNK_ROI_OBJ
+                )
+                self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(
+                    self._drive_status is DriveStatus.UNSEEN_SCENE
+                )
+                self._show_image_seg_roi_plot(
+                    trav_mask=pooled_trav_mask,
+                    unc_mask=self._uncertainty_checker._get_uncertainty_mask(
+                        masks=trav_masks
+                    ),
+                )
 
             # Ask human, "Is an operator call required at this frame?"
             human_op_call_required: bool = op_call_req_confirm(console=self._console)
 
             # Check ROI
-            if trav_roi < self._thresholds["roi"]:
-                # Bad ROI
-                self._drive_status = DriveStatus.BAD_ROI
+            # if trav_roi < self._thresholds["roi"]:
+            #     # Bad ROI
+            #     self._drive_status = DriveStatus.BAD_ROI
+
+            # How uncertain is the ROI?
+            if unc_roi > self._thresholds["roi_unc"]:
+                self._drive_status = DriveStatus.UNK_ROI_OBJ
             elif self._drive_status is not DriveStatus.OK:
-                # Frame was flagged for unseen scene/Low ROI before,
-                # but after prompting, output passes condition
+                # Frame was NOT OK, but has become OK after human operator helps
                 self._drive_status = DriveStatus.OK
 
                 # Since this prompt works for the new scene, save it as a valid
@@ -342,24 +420,20 @@ class HumanOperatorController:
                 # data should not be logged
                 log_required = False
             else:
-                # self._console.log("ROI OK")
                 # Check sim with current scene ref frame
                 if ref_sim_score < self._thresholds["ref_sim"]:
-                    # self._console.log("Low sim with ref frame")
-
                     # Get best match from history
                     hist_best_scene_prompt, hist_best_ref_sim = (
                         self._prompt_store.get_best_match(frame=self._frame)
                     )
 
-                    # Check if best match fulfils criteria and not already flagged for bad ROI
-                    if (
-                        hist_best_ref_sim < self._thresholds["ref_sim"]
-                        # and self._drive_status is not DriveStatus.BAD_ROI
-                    ):
-                        # Unseen scene
+                    # Check if best match fulfils criteria
+                    if hist_best_ref_sim < self._thresholds["ref_sim"]:
+                        # No satisfactory match found, so this is an unseen scene
                         self._drive_status = DriveStatus.UNSEEN_SCENE
                     else:
+                        # Best match is actually a pretty similar frame to the current one
+                        hist_used_succ = True
                         match_scene_prompt: SceneWeightedPrompt = (
                             hist_best_scene_prompt.copy()
                         )
@@ -368,13 +442,10 @@ class HumanOperatorController:
                             delta_prompts=match_scene_prompt["prompts"],
                         )
                         self._curr_scene_prompt = match_scene_prompt
-                        # Best match is actually a pretty similar frame to the current one
-                        # i.e. history search was successful
-                        hist_used_succ = True
 
-            drive_status_msg: str = "[green]Aal iz well[/]"
-            if self._drive_status is DriveStatus.BAD_ROI:
-                drive_status_msg = "[red]Low ROI[/]"
+            drive_status_msg: str = "[bold lightgreen]OK[/]"
+            if self._drive_status is DriveStatus.UNK_ROI_OBJ:
+                drive_status_msg = "[red]Unknown object detected![/]"
             elif self._drive_status is DriveStatus.UNSEEN_SCENE:
                 drive_status_msg = "[red]Unseen env detected![/]"
 
@@ -385,10 +456,13 @@ class HumanOperatorController:
                     if ref_sim_score > -np.inf
                     else "[dim]NA[/]",
                     "trav_roi": f"{trav_roi * 100:.2f}%",
+                    "roi_uncertainty": f"{unc_roi * 100:.2f}%",
                     "drive_status": drive_status_msg,
                 }
             )
-            self._console.print(f"Prompts: {self._curr_scene_prompt['prompts']}")
+            self._console.print_json(
+                json.dumps(dict(self._curr_scene_prompt["prompts"])),
+            )
 
             if self._drive_status is not DriveStatus.OK:
                 self._curr_scene_prompt = SceneWeightedPrompt(
@@ -409,11 +483,21 @@ class HumanOperatorController:
                     ref_sim_score=ref_sim_score,
                     thresh=self._thresholds,
                     trav_roi=trav_roi,
+                    unc_roi=unc_roi,
                     video=self._video,
                     prompts=self._pipeline.prompts,
                     hist_used_succ=hist_used_succ,
                 )
                 save_log(log=log)
+                if self._drive_status is DriveStatus.UNK_ROI_OBJ:
+                    self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(True)
+                else:
+                    self._hoc_progression[DriveStatus.UNK_ROI_OBJ].append(False)
+
+                if self._drive_status is DriveStatus.UNSEEN_SCENE:
+                    self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(True)
+                else:
+                    self._hoc_progression[DriveStatus.UNSEEN_SCENE].append(False)
 
             print("=" * 40, end="\n\n\n")
             self._inx += self._n_frames_skip
@@ -424,5 +508,7 @@ class HumanOperatorController:
 
         print()
 
-        self._loopback()
-        self._console.print("/// BYE BYE ///", justify="center", style="bold green")
+        # self._console.log(
+        #     "[dim]Loopback is disabled currently. Will be enabled later.[/]"
+        # )
+        # self._loopback()

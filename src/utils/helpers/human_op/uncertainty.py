@@ -2,13 +2,29 @@ from utils.metrics.roi import ROI_Checker
 import torch
 from abc import ABC, abstractmethod
 from typing_extensions import override
+import numpy as np
 
 
 class UncertaintyChecker(ABC):
     _roi: ROI_Checker
+    _thresh: float | None
 
-    def __init__(self, roi: ROI_Checker) -> None:
+    def __init__(self, roi: ROI_Checker, unc_thresh: float | None = None) -> None:
         self._roi = roi
+        self._thresh = unc_thresh
+
+    @property
+    def thresh(self) -> float | None:
+        return self._thresh
+
+    @thresh.setter
+    def thresh(self, unc_thresh: float | None) -> None:
+        if unc_thresh is not None and (unc_thresh < 0 or unc_thresh > 1):
+            raise ValueError(
+                "`unc_thresh` should be `None` or a number between 0 and 1"
+            )
+
+        self.thresh = unc_thresh
 
     @abstractmethod
     def _get_uncertainty_mask(self, masks: torch.Tensor) -> torch.Tensor:
@@ -33,7 +49,8 @@ class UncertaintyChecker(ABC):
             float: A single number between [0, 1] telling the amount of
                 uncertainty in the ROI of the masks.
         """
-        return self._roi.trav_area(mask=self._get_uncertainty_mask(masks=masks))
+        masks_: torch.Tensor = masks if self.thresh is None else masks > self.thresh
+        return self._roi.trav_area(mask=self._get_uncertainty_mask(masks=masks_))
 
 
 class ProbabilisticUncertaintyChecker(UncertaintyChecker):
@@ -64,3 +81,39 @@ class ProbabilisticUncertaintyChecker(UncertaintyChecker):
         undet_masks: torch.Tensor = 1 - masks
         uncertainty_mask: torch.Tensor = undet_masks.prod(dim=0).squeeze(0)
         return uncertainty_mask
+
+
+class NormalizedEntropyUncertaintyChecker(UncertaintyChecker):
+    """
+    Uncertainty checker using normalized entropy.
+    """
+
+    def __init__(self, roi: ROI_Checker) -> None:
+        super().__init__(roi=roi)
+
+    @override
+    def _get_uncertainty_mask(self, masks: torch.Tensor) -> torch.Tensor:
+        weights: torch.Tensor = masks.max(dim=0).values
+        probas: torch.Tensor = masks.softmax(dim=0)
+        entropy: torch.Tensor = torch.sum(-probas * torch.log(probas), dim=0).squeeze(0)
+        norm_entropy: torch.Tensor = entropy / np.log(masks.shape[0])
+        return weights * norm_entropy
+
+
+class InvMaxProbaUncertaintyChecker(UncertaintyChecker):
+    """
+    Uncertainty checker that works on the principle that:
+    uncertainty = 1 - max(probas of all prompts).
+
+    This method produces very similar results to the
+    `NormalizedEntropyUncertaintyChecker` somehow.
+
+    TODO See why are the results so similar?
+    """
+
+    def __init__(self, roi: ROI_Checker) -> None:
+        super().__init__(roi=roi)
+
+    @override
+    def _get_uncertainty_mask(self, masks: torch.Tensor) -> torch.Tensor:
+        return 1 - masks.max(dim=0).values.squeeze()
