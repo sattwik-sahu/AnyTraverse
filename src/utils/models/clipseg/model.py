@@ -71,7 +71,6 @@ class CLIPSeg:
         """
         Runs the CLIPSeg model on the given list of prompts and the image.
         The dimensions of the output are `(N, 1, H, W)`, where:
-
             - `N` is the number of prompts.
             - `H` is the height of the input image.
             - `W` is the width of the input image.

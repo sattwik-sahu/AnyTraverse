@@ -46,16 +46,16 @@ def create_pipeline():
 
     config = PipelineConfig(
         camera=CameraConfig(fx=fx, fy=fy, cx=cx, cy=cy),
-        prompts=[("Floor", 1.0), ("Chair", -1.0)],
+        prompts=[],
         device=device,
-        height_scoring=HeightScoringConfig(alpha=30, z_thresh=0.1),
+        height_scoring=HeightScoringConfig(alpha=(0, 0), z_thresh=(0, 0)),
         plane_fitting=PlaneFittingConfig(
             fitter=PCAPlaneFitter(),
             trav_thresh=0.1,
         ),
         height_score=False,
         # mask_pooler=ProbabilisticPooler(),
-        mask_pooler=WeightedMaxPooler()
+        mask_pooler=WeightedMaxPooler(),
     )
 
     with console.status("Initializing pipeline..."):
@@ -83,7 +83,11 @@ class CameraStream:
         self.running = False
 
     def overlay_mask(
-        self, frame: np.ndarray, mask: np.ndarray, threshold: float = 0.5, alpha: float = 0.3
+        self,
+        frame: np.ndarray,
+        mask: np.ndarray,
+        threshold: float = 0.5,
+        alpha: float = 0.3,
     ) -> np.ndarray:
         mask_binary = mask > threshold
         color_mask = np.zeros_like(frame)
