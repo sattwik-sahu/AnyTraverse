@@ -30,7 +30,7 @@ class UncertaintyChecker(ABC):
     def _get_uncertainty_mask(self, masks: torch.Tensor) -> torch.Tensor:
         pass
 
-    def roi_uncertainty(self, masks: torch.Tensor) -> float:
+    def roi_uncertainty(self, masks: torch.Tensor) -> tuple[torch.Tensor, float]:
         """
         Calculates the uncertainty of detection in the ROI
         defined in the `ROI_Checker` attribute, in the given
@@ -46,11 +46,13 @@ class UncertaintyChecker(ABC):
                 uncertainty. Dim: `(n, h, w)`
 
         Returns:
-            float: A single number between [0, 1] telling the amount of
-                uncertainty in the ROI of the masks.
+            (torch.Tensor, float): Returns a tuple of a `torch.Tensor` and a `float`
+                - The uncertainty mask, where `1.0` means most uncertain and `0.0` means least uncertain.
+                - A single number between `[0.0, 1.0]` telling the amount of uncertainty in the ROI of the masks.
         """
         masks_: torch.Tensor = masks if self.thresh is None else masks > self.thresh
-        return self._roi.trav_area(mask=self._get_uncertainty_mask(masks=masks_))
+        unc_mask: torch.Tensor = self._get_uncertainty_mask(masks=masks_)
+        return unc_mask, self._roi.trav_area(mask=unc_mask)
 
 
 class ProbabilisticUncertaintyChecker(UncertaintyChecker):

@@ -1,12 +1,13 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, TypedDict
+from typing import Dict, List, TypedDict, Optional
 from datetime import datetime
 from pydantic import BaseModel
 from dataclasses import dataclass
 from config.utils import WeightedPrompt
 import torch
 from PIL import Image
+from utils.pipelines.pipeline_002 import PipelineOutput
 
 
 WeightedPromptList = List[WeightedPrompt]
@@ -47,6 +48,7 @@ class Thresholds(TypedDict):
     ref_sim: float
     roi_unc: float
     seg: float
+    trav_roi: float
 
 
 class HumanOperatorCallLogModel(BaseModel):
@@ -90,20 +92,14 @@ class HistoryPickle:
     scene_prompts_store: List[SceneWeightedPrompt]
 
 
-# log1 = HumanOperatorCallLog(
-#     video=DatasetVideo.RUGD_CREEK,
-#     ref_sim_score=0.4,
-#     frame_inx=9,
-#     trav_roi=0.34,
-#     thresh=Thresholds(ref_sim=0.9, roi=0.5, seg=0.25),
-#     human_op_called=True,
-#     human_op_call_req=True,
-#     human_op_call_type=DriveStatus.BAD_ROI,
-# )
-
-# Create the engine
-# engine = create_engine("sqlite:///data/logs/human-op.db")
-
-# if __name__ == "__main__":
-#     # Create database and tables
-#     SQLModel.metadata.create_all(engine)
+@dataclass
+class HumanOperatorControllerState:
+    frame: Image.Image
+    scene_prompt: SceneWeightedPrompt
+    unc_map: torch.Tensor
+    trav_map: torch.Tensor
+    prompt_masks: torch.Tensor
+    # anytraverse_output: PipelineOutput
+    unc_roi: float
+    trav_roi: float
+    human_call: DriveStatus | None

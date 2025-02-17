@@ -101,7 +101,7 @@ class HumanOperatorController:
         self._uncertainty_checker = ProbabilisticUncertaintyChecker(roi=self._roi)
 
         self._thresholds = Thresholds(
-            ref_sim=ref_sim_thresh, roi_unc=roi_unc_thresh, seg=seg_thresh
+            ref_sim=ref_sim_thresh, roi_unc=roi_unc_thresh, seg=seg_thresh, trav_roi=0.5
         )
 
         with console.status("Initializing pipeline..."):
