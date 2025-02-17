@@ -1,7 +1,7 @@
 import torch
 from PIL import Image
 from typing import Type
-
+from time import sleep
 from config.utils import WeightedPrompt
 from utils.cli.human_op.models import (
     DriveStatus,
@@ -16,8 +16,8 @@ from utils.helpers import DEVICE
 from utils.helpers.human_op.uncertainty import (
     InvMaxProbaUncertaintyChecker,
     UncertaintyChecker,
-    ProbabilisticUncertaintyChecker,
 )
+from utils.models.clipseg.pooler import ProbabilisticPooler
 from utils.metrics.roi import ROI_Checker
 from utils.models import ImageEmbeddingModel
 from utils.models.clip import CLIP
@@ -117,13 +117,12 @@ class HumanOperatorControllerContext:
         # Create a new scene and set the current scene
         self._curr_scene = Scene(ref_frame=frame, ref_frame_embedding=frame_embedding)
 
-        # if len(self._scene_prompt_store._store) == 0:
-        #     self._ref_scene_prompt = SceneWeightedPrompt(
-        #         scene=self._curr_scene, prompts=self._pipeline.prompts
-        #     )
-        #     self._scene_prompt_store.add_scene_prompt(
-        #         scene_prompt=self._ref_scene_prompt
-        #     )
+        if len(self._scene_prompt_store._store) == 0:
+            self._scene_prompt_store.add_scene_prompt(
+                scene_prompt=SceneWeightedPrompt(
+                    scene=self._curr_scene, prompts=self._pipeline.prompts
+                )
+            )
 
         # Check similarity with reference scene
         best_match_scene_prompt, best_match_sim = (
@@ -175,7 +174,7 @@ class HumanOperatorControllerContext:
             unc_roi=roi_unc,
             unc_map=unc_mask,
             trav_map=trav_mask,
-            prompt_masks=prompt_masks
+            prompt_masks=prompt_masks,
         )
 
 
@@ -185,6 +184,8 @@ def main():
     fig, ax = plt.subplots(1, 2, figsize=(24, 16))
     fig.show()
 
+    FPS = 30
+
     hoc_ctx = HumanOperatorControllerContext(
         image_embedding=ImageEmbeddings.CLIP,
         ref_sim_thresh=0.9,
@@ -193,11 +194,11 @@ def main():
         ),
         seg_thresh=0.25,
         trav_roi_thresh=0.5,
-        # unc_checker=ProbabilisticUncertaintyChecker,
         unc_checker=InvMaxProbaUncertaintyChecker,
         unc_roi_thresh=0.5,
         init_prompts=[("grass", 1)],
     )
+    hoc_ctx._pipeline._mask_pooler = ProbabilisticPooler()
     cap = cv2.VideoCapture(
         filename="/mnt/toshiba_hdd/datasets/iiserb/anytraverse/2024-12-10__hound_hillside/video_012.avi"
     )
@@ -212,7 +213,10 @@ def main():
         console.log(f"Frame size: {frame.size}")
 
         state = hoc_ctx.run_next(frame=frame)
-        console.print(state.human_call, state.trav_roi, state.unc_roi)
+        console.log(
+            f"hoc={state.human_call}, trav_roi={state.trav_roi}, unc_roi={state.unc_roi}"
+        )
+        console.log(f"Prompt masks shape: {state.prompt_masks.shape}")
 
         ax[0].clear()
         ax[1].clear()
@@ -226,7 +230,7 @@ def main():
         ax[1].set_axis_off()
         ax[1].set_title("Traversability Map")
 
-        console.print(dict(hoc_ctx._pipeline.prompts))
+        console.log(f"prompts={dict(hoc_ctx._pipeline.prompts)}")
 
         if state.human_call is DriveStatus.OK:
             console.log("No problem desu!", style="bold light_green")
@@ -234,17 +238,16 @@ def main():
             console.log("Human Operator call required", style="red")
             match state.human_call:
                 case DriveStatus.UNK_ROI_OBJ:
-                    console.print(
+                    console.log(
                         "Never seen this shit in my entire `episode`", style="yellow"
                     )
                 case DriveStatus.UNSEEN_SCENE:
-                    console.print(
+                    console.log(
                         "Never been here in my entire `episode`", style="magenta"
                     )
-            console.print("Enter new prompts mommy", style="dim")
+            console.log("Enter new prompts mommy", style="dim")
             hoc_ctx.human_call(human_prompts=get_prompts(console=console))
-
-            input()
+        plt.pause(1 / FPS)
 
 
 if __name__ == "__main__":

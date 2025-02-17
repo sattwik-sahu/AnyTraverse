@@ -33,6 +33,9 @@ class ScenePromptStoreManager:
         return torch.cat(
             [sp["scene"]["ref_frame_embedding"] for sp in self._store], dim=0
         )
+    
+    def is_empty(self) -> bool:
+        return len(self._store) == 0
 
     def add_scene_prompt(self, scene_prompt: SceneWeightedPrompt) -> None:
         if len(scene_prompt["prompts"]) > 0:
