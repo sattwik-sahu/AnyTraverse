@@ -61,7 +61,7 @@ class HumanOperatorControllerContext:
             ref_sim=ref_sim_thresh,
             roi_unc=unc_roi_thresh,
             seg=seg_thresh,
-            trav_roi=trav_roi_thresh,
+            # trav_roi=trav_roi_thresh,
         )
         match image_embedding:
             case ImageEmbeddings.CLIP:

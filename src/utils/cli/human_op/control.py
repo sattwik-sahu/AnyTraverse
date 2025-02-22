@@ -101,7 +101,7 @@ class HumanOperatorController:
         self._uncertainty_checker = ProbabilisticUncertaintyChecker(roi=self._roi)
 
         self._thresholds = Thresholds(
-            ref_sim=ref_sim_thresh, roi_unc=roi_unc_thresh, seg=seg_thresh, trav_roi=0.5
+            ref_sim=ref_sim_thresh, roi_unc=roi_unc_thresh, seg=seg_thresh
         )
 
         with console.status("Initializing pipeline..."):
@@ -377,7 +377,9 @@ class HumanOperatorController:
 
             # ROI calculations
             trav_roi: float = self._roi.trav_area(mask=thresh_mask)
-            unc_roi: float = self._uncertainty_checker.roi_uncertainty(masks=trav_masks)
+            unc_mask, unc_roi = self._uncertainty_checker.roi_uncertainty(
+                masks=trav_masks
+            )
 
             # Calculate current frame vs. scene ref frame similarity
             ref_sim_score: float = self._get_ref_frame_sim_score()
@@ -499,8 +501,3 @@ class HumanOperatorController:
         self._console.print("/// THE END ///", justify="center", style="bold magenta")
 
         print()
-
-        # self._console.log(
-        #     "[dim]Loopback is disabled currently. Will be enabled later.[/]"
-        # )
-        # self._loopback()

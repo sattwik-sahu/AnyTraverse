@@ -48,7 +48,6 @@ class Thresholds(TypedDict):
     ref_sim: float
     roi_unc: float
     seg: float
-    trav_roi: float
 
 
 class HumanOperatorCallLogModel(BaseModel):
