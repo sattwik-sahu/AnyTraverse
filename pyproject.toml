@@ -16,6 +16,9 @@ name = "pytorch-gpu"
 url = "https://download.pytorch.org/whl/cu124"
 priority = "explicit"
 
+[project.scripts]
+anytraverse = "anytraverse.__main__:main"
+
 [tool.poetry.extras]
 pytorch-cpu = ["torch", "torchvision", "torchaudio"]
 pytorch-gpu = ["torch", "torchvision", "torchaudio"]

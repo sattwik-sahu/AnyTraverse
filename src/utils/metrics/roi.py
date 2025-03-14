@@ -103,8 +103,19 @@ class ROI_Checker:
         traversable.
 
         Args:
-            mask (torch.Tensor): The boolean traversability mask.
-                Dim: `H x W`, where `H`, `W` are height, width of image.
+            mask (torch.Tensor): The traversability mask. Dim: `H x W`, where \
+                `H`, `W` are height, width of image.
+
+        Returns:
+            float: The mean of the values in the ROI of the mask. If `mask`
+                contains `bool` values, this gives the fraction of pixels
+                elements in the ROI whose value is `True`. Otherwise, it
+                returns the mean of the values of elements in the ROI.
+
+        Note:
+            Implementation for the ROI calculation is the same for `bool`
+            or otherwise, but the intuition behind the output varies and the
+            above description is provided only for exlpanation purposes.
         """
         roi_mask: torch.Tensor = self._get_roi(mask=mask)
         return roi_mask.float().mean().item()

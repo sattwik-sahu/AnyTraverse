@@ -22,7 +22,7 @@ class Pipeline2(CLIPSegOffnavPipeline):
     def __init__(self, config: PipelineConfig) -> None:
         super().__init__(name="Pipeline_002")
         self._config = config
-        self._clipseg = CLIPSeg(device=self._config.device)
+        self._clipseg = CLIPSeg(model_name="mcmonkey/clipseg-rd64-refined-fp16", device=self._config.device)
         self._perform_height_scoring = (
             config.plane_fitting is not None
             and config.height_scoring is not None
