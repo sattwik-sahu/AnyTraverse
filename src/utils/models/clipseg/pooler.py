@@ -109,10 +109,10 @@ class ProbabilisticPooler(CLIPSegMaskPooler):
         weights_tensor = torch.tensor(weights_arr).reshape(-1, 1, 1).to(device=_device)
         pos_inx, neg_inx = weights_arr > 0, weights_arr < 0
         z = weights_tensor * masks.squeeze(1)
-        proba_trav = (1 - torch.prod(1 - z[pos_inx.flatten()], dim=0)) * torch.prod(
-            1 + z[neg_inx.flatten()], dim=0, dtype=torch.float32
+        proba_trav = (1 - torch.prod(1 - z[pos_inx.flatten()], dim=0)) * torch.prod(  # type: ignore
+            1 + z[neg_inx.flatten()],  # type: ignore
+            dim=0,
+            dtype=torch.float32,
         )
-        # assert proba_trav.ndim == 3
-        # hi bro
-        # Yo :-D
+
         return proba_trav

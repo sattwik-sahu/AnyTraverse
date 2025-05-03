@@ -394,7 +394,8 @@ class HumanOperatorController:
                 )
 
             # Ask human, "Is an operator call required at this frame?"
-            human_op_call_required: bool = op_call_req_confirm(console=self._console)
+            # human_op_call_required: bool = op_call_req_confirm(console=self._console)
+            human_op_call_required: bool = False
 
             # Check ROI
             # if trav_roi < self._thresholds["roi"]:
@@ -495,6 +496,7 @@ class HumanOperatorController:
 
             print("=" * 40, end="\n\n\n")
             self._inx += self._n_frames_skip
+            plt.pause(0.003)
 
         self._capture.release()
         print()

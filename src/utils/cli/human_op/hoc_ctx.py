@@ -35,9 +35,8 @@ from matplotlib import pyplot as plt
 torch.set_default_device(device=DEVICE)
 
 
-class HumanOperatorControllerContext:
+class AnyTraverseHOC_Context:
     _scene_prompt_store: ScenePromptStoreManager
-    # _ref_scene_prompt: SceneWeightedPrompt
     _image_embedding: ImageEmbeddingModel
     _drive_status: DriveStatus
     _pipeline: Pipeline
@@ -84,6 +83,15 @@ class HumanOperatorControllerContext:
         return self._pipeline.prompts
 
     def human_call(self, human_prompts: list[WeightedPrompt]):
+        """
+        Performs a human operator call with `human_prompts` as the
+        input from the human in the call. Updates the traversability
+        preferences.
+
+        Args:
+            human_prompts (list[WeightedPrompt]): The weighted prompts
+                input by the human operator
+        """
         self._update_prompts(prompts=human_prompts)
         prompts: list[WeightedPrompt] = self._pipeline.prompts
 
@@ -95,7 +103,6 @@ class HumanOperatorControllerContext:
             ),
             prompts=prompts,
         )
-        print(prompts)
         # Add the new scene prompt to the memory
         self._scene_prompt_store.add_scene_prompt(scene_prompt=new_scene_prompt)
 
@@ -141,7 +148,8 @@ class HumanOperatorControllerContext:
 
         # Pass the frame through the pipeline
         trav_mask, prompt_masks = self._get_masks(frame=frame)
-        print(prompt_masks.shape)
+        # print(prompt_masks.shape)
+
         # Check the uncertainty in the ROI
         unc_mask, roi_unc = self._unc_checker.roi_uncertainty(masks=prompt_masks)
         # Check if unknown object in ROI?
@@ -156,13 +164,13 @@ class HumanOperatorControllerContext:
         # Check the traversability ROI
         roi_trav: float = self._roi_checker.trav_area(mask=trav_mask)
 
-        print(
-            {
-                "thresholds": self._thresholds,
-                "unc_roi": roi_unc,
-                "ref_sim": best_match_sim,
-            }
-        )
+        # print(
+        #     {
+        #         "thresholds": self._thresholds,
+        #         "unc_roi": roi_unc,
+        #         "ref_sim": best_match_sim,
+        #     }
+        # )
 
         return HumanOperatorControllerState(
             frame=frame,
@@ -186,7 +194,7 @@ def main():
 
     FPS = 30
 
-    hoc_ctx = HumanOperatorControllerContext(
+    hoc_ctx = AnyTraverseHOC_Context(
         image_embedding=ImageEmbeddings.CLIP,
         ref_sim_thresh=0.9,
         roi_checker=ROI_Checker(
