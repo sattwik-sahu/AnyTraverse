@@ -1,10 +1,8 @@
-FROM osrf/ros:noetic-desktop-full
-
+FROM ros:humble-ros-base
 
 # Example of installing programs
 RUN apt-get update \
     && apt-get install -y \
-    neovim \
     zsh \
     git \
     curl \
@@ -20,7 +18,7 @@ RUN apt-get update \
 
 
 # Create a non-root user
-ARG USERNAME=sattwik
+ARG USERNAME=moonlab
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
