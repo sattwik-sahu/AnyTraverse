@@ -9,7 +9,7 @@ RUN apt-get update \
     wget \
     tmux \
     python3-pip \
-    python3-rosdep \
+    python3-rosdep \    
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -34,8 +34,10 @@ RUN apt-get update \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
-ENV TERM=xterm-256color
-ENV SHELL=/bin/zsh
+ENV TERM xterm-256color
+ENV SHELL /bin/zsh
+
+ENV DISPLAY $DISPLAY
 
 # Set up entrypoint and default command
 USER ${USERNAME}
