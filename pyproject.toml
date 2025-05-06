@@ -1,71 +1,53 @@
-[tool.poetry]
+[project]
 name = "anytraverse"
-version = "0.1.0"
-description = "Vision-Language based navigation for offroad robots."
-authors = ["Sattwik Kumar Sahu <sattwik21@iiserb.ac.in>", "Agamdeep Singh <agamdeep20@iiserb.ac.in>", "Karthik Babu Nambiar <karthik23@iiserb.ac.in>"]
+version = "1.0.0"
+description = "Offroad Traversability Segmentation with VLM and Human in the Loop"
 readme = "README.md"
-packages = [{include = "anytraverse", from = "src"}]
-
-[[tool.poetry.source]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
-
-[[tool.poetry.source]]
-name = "pytorch-gpu"
-url = "https://download.pytorch.org/whl/cu124"
-priority = "explicit"
+authors = [
+    { name = "Sattwik Kumar Sahu", email = "sattwik21@iiserb.ac.in" },
+    { name = "Agamdeep Singh", email = "agamdeep20@iiserb.ac.in" },
+    { name = "Karthik Babu Nambiar", email = "karthik23@iiserb.ac.in" },
+    { name = "Sujit P B", email = "sujit@iiserb.ac.in" },
+]
+requires-python = ">=3.12.5"
+dependencies = [
+    "clip",
+    "ftfy>=6.3.1",
+    "matplotlib>=3.10.1",
+    "numpy<2",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.2.3",
+    "pillow>=11.2.1",
+    "pydantic>=2.11.4",
+    "regex>=2024.11.6",
+    "rich>=14.0.0",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "spectacularai[full]>=1.40.1",
+    "torch>=2.7.0",
+    "torchvision>=0.22.0",
+    "tqdm>=4.67.1",
+    "transformers>=4.51.3",
+    "typer>=0.15.3",
+]
 
 [project.scripts]
-anytraverse = "anytraverse.__main__:main"
-
-[tool.poetry.extras]
-pytorch-cpu = ["torch", "torchvision", "torchaudio"]
-pytorch-gpu = ["torch", "torchvision", "torchaudio"]
-
-[tool.poetry.dependencies]
-python = "^3.10"
-numpy = "<2"
-scipy = "^1.14.1"
-matplotlib = "^3.9.2"
-typer = "^0.12.5"
-pillow = "^10.4.0"
-opencv-python = "^4.10.0.84"
-rich = "^13.9.2"
-transformers = "^4.45.2"
-torch = "^2.4.1"
-torchvision = "^0.19.1"
-einops = "^0.8.0"
-timm = "^1.0.9"
-accelerate = ">=0.26.0"
-qwen-vl-utils = "^0.0.8"
-plotly = "^5.24.1"
-scikit-learn = "^1.5.2"
-scikit-image = "^0.24.0"
-pydantic = "^2.9.2"
-pandas = "^2.2.3"
-easypyspin = "^2.0.1"
-fastapi = "^0.115.5"
-uvicorn = "^0.32.0"
-websockets = "^14.1"
-flax = "^0.10.2"
-streamlit = "^1.41.0"
-natsort = "^8.4.0"
-ftfy = "^6.3.1"
-regex = "^2024.11.6"
-tqdm = "^4.67.1"
-seaborn = "^0.13.2"
-ultralytics = "^8.3.56"
-
-
-[tool.poetry.group.dev.dependencies]
-jupyter = "^1.1.1"
-ruff = "^0.6.9"
-pytest = "^8.3.3"
-label-studio = "^1.15.0"
-pycocotools = "^2.0.8"
-datasets = "^3.2.0"
+anytraverse = "anytraverse:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+deploy = [
+    "fastapi>=0.115.12",
+]
+dev = [
+    "ipython>=9.2.0",
+    "jupyter>=1.1.1",
+    "pytest>=8.3.5",
+    "ruff>=0.11.8",
+]
+
+[tool.uv.sources]
+clip = { git = "https://github.com/openai/CLIP.git" }
