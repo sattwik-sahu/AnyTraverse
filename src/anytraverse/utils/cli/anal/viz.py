@@ -7,7 +7,7 @@ from numpy import typing as npt
 from PIL import Image
 
 from anytraverse.utils.helpers.video import extract_frames_from_video
-from anytraverse.utils.pipelines.pipeline_002 import Pipeline2
+from anytraverse.utils.pipelines.base import Pipeline2
 
 from rich.progress import Progress
 

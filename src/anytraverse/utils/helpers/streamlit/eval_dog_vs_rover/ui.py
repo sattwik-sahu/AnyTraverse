@@ -12,7 +12,7 @@ from anytraverse.utils.helpers.streamlit.eval_dog_vs_rover.image import (
 )
 from anytraverse.utils.helpers.streamlit.eval_dog_vs_rover.models import Vehicles
 from anytraverse.utils.metrics.iou import iou_torch as calc_iou
-from anytraverse.utils.pipelines.pipeline_002 import PipelineOutput
+from anytraverse.utils.pipelines.base import PipelineOutput
 
 
 class VehicleForm(TypedDict):

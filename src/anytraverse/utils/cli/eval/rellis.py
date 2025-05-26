@@ -2,7 +2,7 @@ from matplotlib.gridspec import GridSpec
 import torch
 import numpy as np
 
-from anytraverse.utils.pipelines.pipeline_002 import Pipeline2
+from anytraverse.utils.pipelines.base import Pipeline2
 from anytraverse.config.pipeline_002 import PipelineConfig
 from anytraverse.config.utils import (
     CameraConfig,

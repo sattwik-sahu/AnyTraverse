@@ -22,13 +22,13 @@ from anytraverse.utils.metrics.roi import ROI_Checker
 from anytraverse.utils.models import ImageEmbeddingModel
 from anytraverse.utils.models.clip import CLIP
 from anytraverse.utils.models.siglip import SigLIP
-from anytraverse.utils.pipelines.pipeline_002 import Pipeline2 as Pipeline
-from anytraverse.utils.pipelines.pipeline_002 import PipelineOutput
+from anytraverse.utils.pipelines.base import Pipeline2 as Pipeline
+from anytraverse.utils.pipelines.base import PipelineOutput
 import cv2
 import numpy as np
 from anytraverse.utils.cli.human_op.io import get_prompts
 from rich.console import Console
-from anytraverse.utils.pipelines.streaming import create_pipeline
+from anytraverse.utils.pipelines import create_pipeline
 from matplotlib import pyplot as plt
 
 
@@ -75,7 +75,7 @@ class AnyTraverseHOC_Context:
             image_embedding_model=self._image_embedding
         )
         self._drive_status = DriveStatus.OK
-        self._pipeline = create_pipeline()
+        self._pipeline = create_pipeline(init_prompts=init_prompts)
         self._pipeline.prompts = init_prompts
 
     @property
@@ -108,8 +108,8 @@ class AnyTraverseHOC_Context:
 
     def _update_prompts(self, prompts: list[WeightedPrompt]) -> None:
         # Create an updated version of the prompts
-        curr_prompt_dict: dict[str, float] = dict(self._pipeline.prompts)
-        prompts_dict: dict[str, float] = dict(prompts)
+        curr_prompt_dict: dict[str, float] = dict[str, float](self._pipeline.prompts)
+        prompts_dict: dict[str, float] = dict[str, float](prompts)
         updated_prompts_dict: dict[str, float] = {**curr_prompt_dict, **prompts_dict}
         updated_prompts: list[WeightedPrompt] = list(updated_prompts_dict.items())
         self._pipeline.prompts = updated_prompts
@@ -182,7 +182,7 @@ class AnyTraverseHOC_Context:
             unc_roi=roi_unc,
             unc_map=unc_mask,
             trav_map=trav_mask,
-            prompt_masks=prompt_masks,
+            prompt_attn_maps=prompt_masks,
         )
 
 
@@ -224,7 +224,7 @@ def main():
         console.log(
             f"hoc={state.human_call}, trav_roi={state.trav_roi}, unc_roi={state.unc_roi}"
         )
-        console.log(f"Prompt masks shape: {state.prompt_masks.shape}")
+        console.log(f"Prompt masks shape: {state.prompt_attn_maps.shape}")
 
         ax[0].clear()
         ax[1].clear()

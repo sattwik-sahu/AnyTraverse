@@ -1,6 +1,6 @@
 import torch
 
-from anytraverse.utils.pipelines.pipeline_002 import (
+from anytraverse.utils.pipelines.base import (
     Pipeline2,
     WeightedPrompt,
     PipelineOutput,

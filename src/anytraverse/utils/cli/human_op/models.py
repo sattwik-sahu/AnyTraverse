@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from anytraverse.config.utils import WeightedPrompt
 import torch
 from PIL import Image
-from anytraverse.utils.pipelines.pipeline_002 import PipelineOutput
+from anytraverse.utils.pipelines.base import PipelineOutput
 
 
 WeightedPromptList = List[WeightedPrompt]
@@ -97,7 +97,7 @@ class HumanOperatorControllerState:
     scene_prompt: SceneWeightedPrompt
     unc_map: torch.Tensor
     trav_map: torch.Tensor
-    prompt_masks: torch.Tensor
+    prompt_attn_maps: torch.Tensor
     # anytraverse_output: PipelineOutput
     unc_roi: float
     trav_roi: float

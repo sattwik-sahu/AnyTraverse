@@ -4,7 +4,7 @@ from typing import List, TypedDict, TypeVar
 
 from pydantic import BaseModel
 
-from anytraverse.utils.pipelines.pipeline_002 import WeightedPrompt
+from anytraverse.utils.pipelines.base import WeightedPrompt
 
 WeightedPrompts = List[WeightedPrompt]
 TVehicleData = TypeVar("TVehicleData")

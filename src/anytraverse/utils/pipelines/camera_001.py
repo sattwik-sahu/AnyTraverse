@@ -20,7 +20,7 @@ from anytraverse.utils.models.clipseg.pooler import (
 os.environ["OPENCV_DNN_BACKEND_CUDA"] = "0"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # Still allow CUDA for the HuggingFace model
 
-from anytraverse.utils.pipelines.pipeline_002 import Pipeline2
+from anytraverse.utils.pipelines.base import Pipeline2
 from anytraverse.config.pipeline_002 import PipelineConfig
 from PIL import Image
 
