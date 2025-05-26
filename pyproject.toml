@@ -12,23 +12,21 @@ authors = [
 requires-python = ">=3.12.5"
 dependencies = [
     "clip",
+    "depthai-sdk>=1.15.1",
+    "fastapi>=0.115.12",
     "ftfy>=6.3.1",
-    "matplotlib>=3.10.1",
-    "numpy<2",
-    "opencv-python>=4.11.0.86",
-    "pandas>=2.2.3",
-    "pillow>=11.2.1",
-    "pydantic>=2.11.4",
+    "matplotlib>=3.10.3",
+    "numpy>=1.26.4",
     "regex>=2024.11.6",
     "rich>=14.0.0",
     "scikit-learn>=1.6.1",
+    "scipy>=1.15.3",
     "seaborn>=0.13.2",
-    "spectacularai[full]>=1.40.1",
     "torch>=2.7.0",
     "torchvision>=0.22.0",
     "tqdm>=4.67.1",
-    "transformers>=4.51.3",
-    "typer>=0.15.3",
+    "transformers>=4.52.3",
+    "typer>=0.15.4",
 ]
 
 [project.scripts]
@@ -39,14 +37,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-deploy = [
-    "fastapi>=0.115.12",
-]
 dev = [
     "ipython>=9.2.0",
     "jupyter>=1.1.1",
     "pytest>=8.3.5",
-    "ruff>=0.11.8",
+    "ruff>=0.11.11",
 ]
 
 [tool.uv.sources]
