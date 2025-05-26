@@ -1,10 +1,13 @@
 [project]
 name = "anytraverse"
-version = "0.1.0"
-description = "VLM-based traversability segmentation with human in the loop"
+version = "1.0.0"
+description = "Offroad Traversability Segmentation with VLM and Human in the Loop"
 readme = "README.md"
 authors = [
-    { name = "Sattwik Sahu", email = "sattwik21@iiserb.ac.in" }
+    { name = "Sattwik Kumar Sahu", email = "sattwik21@iiserb.ac.in" },
+    { name = "Agamdeep Singh", email = "agamdeep20@iiserb.ac.in" },
+    { name = "Karthik Babu Nambiar", email = "karthik23@iiserb.ac.in" },
+    { name = "Sujit P B", email = "sujit@iiserb.ac.in" },
 ]
 requires-python = ">=3.12.5"
 dependencies = [
