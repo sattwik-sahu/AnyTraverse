@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Literal
-from anytraverse.utils.helpers.poolers import MaskPooler
+from anytraverse.utils.helpers.mask_poolers import MaskPooler
 import torch
 
 from anytraverse.config.utils import WeightedPrompt

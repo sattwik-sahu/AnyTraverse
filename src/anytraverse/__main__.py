@@ -1,5 +1,4 @@
 from anytraverse.utils.cli import app
-from anytraverse import mask_poolers
 
 
 def main():
