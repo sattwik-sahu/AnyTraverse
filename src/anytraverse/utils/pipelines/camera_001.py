@@ -11,7 +11,7 @@ from anytraverse.config.utils import (
     PlaneFittingConfig,
 )
 from anytraverse.utils.helpers.plane_fit import PCAPlaneFitter
-from anytraverse.utils.models.clipseg.pooler import (
+from anytraverse.utils.helpers.pooler import (
     WeightedMaxPooler,
     ProbabilisticPooler,
 )

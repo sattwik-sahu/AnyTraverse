@@ -13,7 +13,7 @@ from anytraverse.config.utils import (
 )
 from PIL import Image
 from typing import List
-from anytraverse.utils.models.clipseg.pooler import WeightedMaxPooler
+from anytraverse.utils.helpers.pooler import WeightedMaxPooler
 from anytraverse.utils.helpers.plane_fit import PCAPlaneFitter
 import streamlit as st
 

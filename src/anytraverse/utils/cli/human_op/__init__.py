@@ -19,6 +19,7 @@ from anytraverse.utils.cli.human_op.models import (
 from anytraverse.utils.cli.human_op.prompt_store import save_store
 from typing_extensions import Annotated
 
+
 app = Typer(name="human_op", help="Run the human operator evaluation pipeline")
 console = Console()
 

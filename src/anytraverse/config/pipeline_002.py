@@ -1,14 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Literal, Optional
-from anytraverse.utils.models.clipseg.pooler import CLIPSegMaskPooler
+from typing import List, Literal
+from anytraverse.utils.helpers.poolers import MaskPooler
 import torch
 
-from anytraverse.config.utils import (
-    CameraConfig,
-    HeightScoringConfig,
-    PlaneFittingConfig,
-    WeightedPrompt,
-)
+from anytraverse.config.utils import WeightedPrompt
 
 
 @dataclass
@@ -29,9 +24,5 @@ class PipelineConfig:
     """
 
     prompts: List[WeightedPrompt]
-    mask_pooler: type[CLIPSegMaskPooler] | CLIPSegMaskPooler
+    mask_pooler: type[MaskPooler] | MaskPooler
     device: Literal["cuda", "cpu", "mps"] | torch.device
-    # camera: CameraConfig
-    # plane_fitting: Optional[PlaneFittingConfig] = None
-    # height_scoring: Optional[HeightScoringConfig] = None
-    # height_score: bool = True

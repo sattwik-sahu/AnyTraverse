@@ -9,7 +9,7 @@ from anytraverse.config.utils import (
     HeightScoringConfig,
     PlaneFittingConfig,
 )
-from anytraverse.utils.models.clipseg.pooler import (
+from anytraverse.utils.helpers.pooler import (
     WeightedMaxPooler,
     ProbabilisticPooler,
 )

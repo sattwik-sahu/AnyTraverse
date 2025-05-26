@@ -11,7 +11,7 @@ from anytraverse.config.utils import (
     PlaneFittingConfig,
 )
 from anytraverse.utils.helpers.plane_fit import PCAPlaneFitter
-from anytraverse.utils.models.clipseg.pooler import WeightedSumPooler
+from anytraverse.utils.helpers.pooler import WeightedSumPooler
 from anytraverse.utils.pipelines.base import Pipeline2
 from anytraverse.utils.viz.clipseg import plot_clipseg_output as plot_output
 from rich.console import Console

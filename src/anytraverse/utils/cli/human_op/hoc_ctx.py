@@ -1,8 +1,15 @@
-import torch
-from PIL import Image
-from typing import Type
 from time import sleep
+from typing import Type
+
+import cv2
+import numpy as np
+import torch
+from matplotlib import pyplot as plt
+from PIL import Image
+from rich.console import Console
+
 from anytraverse.config.utils import WeightedPrompt
+from anytraverse.utils.cli.human_op.io import get_prompts
 from anytraverse.utils.cli.human_op.models import (
     DriveStatus,
     HumanOperatorControllerState,
@@ -17,20 +24,18 @@ from anytraverse.utils.helpers.human_op.uncertainty import (
     InvMaxProbaUncertaintyChecker,
     UncertaintyChecker,
 )
-from anytraverse.utils.models.clipseg.pooler import ProbabilisticPooler
+from anytraverse.utils.helpers.mask_poolers import (
+    MaskPooler,
+    ProbabilisticPooler,
+    WeightedMaxPooler,
+)
 from anytraverse.utils.metrics.roi import ROI_Checker
 from anytraverse.utils.models import ImageEmbeddingModel
 from anytraverse.utils.models.clip import CLIP
 from anytraverse.utils.models.siglip import SigLIP
+from anytraverse.utils.pipelines import create_pipeline
 from anytraverse.utils.pipelines.base import Pipeline2 as Pipeline
 from anytraverse.utils.pipelines.base import PipelineOutput
-import cv2
-import numpy as np
-from anytraverse.utils.cli.human_op.io import get_prompts
-from rich.console import Console
-from anytraverse.utils.pipelines import create_pipeline
-from matplotlib import pyplot as plt
-
 
 torch.set_default_device(device=DEVICE)
 
@@ -55,6 +60,7 @@ class AnyTraverseHOC_Context:
         ref_sim_thresh: float,
         trav_roi_thresh: float = 0.5,
         unc_checker: Type[UncertaintyChecker] = InvMaxProbaUncertaintyChecker,
+        mask_pooler: Type[MaskPooler] = ProbabilisticPooler,
     ) -> None:
         self._thresholds = Thresholds(
             ref_sim=ref_sim_thresh,
@@ -75,7 +81,9 @@ class AnyTraverseHOC_Context:
             image_embedding_model=self._image_embedding
         )
         self._drive_status = DriveStatus.OK
-        self._pipeline = create_pipeline(init_prompts=init_prompts)
+        self._pipeline = create_pipeline(
+            init_prompts=init_prompts, mask_pooler=mask_pooler
+        )
         self._pipeline.prompts = init_prompts
 
     @property
@@ -184,6 +192,33 @@ class AnyTraverseHOC_Context:
             trav_map=trav_mask,
             prompt_attn_maps=prompt_masks,
         )
+
+
+def create_anytraverse_hoc_context(
+    init_prompts: list[WeightedPrompt],
+    image_embedding: ImageEmbeddings = ImageEmbeddings.CLIP,
+    roi_x_bounds: tuple[float, float] = (0.33, 0.67),
+    roi_y_bounds: tuple[float, float] = (0.67, 1.00),
+    seg_thresh: float = 0.25,
+    ref_sim_thresh: float = 0.9,
+    unc_roi_thresh: float = 0.5,
+    unc_checker: Type[UncertaintyChecker] = InvMaxProbaUncertaintyChecker,
+    mask_pooler: Type[MaskPooler] = WeightedMaxPooler,
+) -> AnyTraverseHOC_Context:
+    return AnyTraverseHOC_Context(
+        image_embedding=image_embedding,
+        roi_checker=ROI_Checker(
+            x_bounds=roi_x_bounds,
+            y_bounds=roi_y_bounds,
+            device=DEVICE,
+        ),
+        seg_thresh=seg_thresh,
+        ref_sim_thresh=ref_sim_thresh,
+        unc_roi_thresh=unc_roi_thresh,
+        init_prompts=init_prompts,
+        unc_checker=unc_checker,
+        mask_pooler=mask_pooler,
+    )
 
 
 def main():

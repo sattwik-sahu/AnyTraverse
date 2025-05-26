@@ -5,11 +5,9 @@ from typing_extensions import override
 
 from anytraverse.config.pipeline_002 import PipelineConfig, WeightedPrompt
 from anytraverse.utils.models.clipseg.model import CLIPSeg
-from anytraverse.utils.models.clipseg.pooler import CLIPSegMaskPooler, WeightedMaxPooler
-from anytraverse.utils.pipelines.height_scoring import (
-    HeightScoringPipeline,
-    HeightScoringOutput,
-)
+
+from anytraverse.utils.helpers.mask_poolers import MaskPooler, WeightedMaxPooler
+
 from typing import List, NamedTuple, Type
 
 
@@ -50,8 +48,8 @@ class Pipeline2(AnyTraversePipeline):
 
     _clipseg: CLIPSeg
     _config: PipelineConfig
-    _mask_pooler: CLIPSegMaskPooler
-    _height_scoring_pipeline: HeightScoringPipeline
+    _mask_pooler: MaskPooler
+    # _height_scoring_pipeline: HeightScoringPipeline
     _perform_height_scoring: bool
 
     _analysis: PipelineOutput
@@ -137,7 +135,7 @@ class Pipeline2(AnyTraversePipeline):
 
 def create_pipeline(
     init_prompts: list[WeightedPrompt],
-    pooler: Type[CLIPSegMaskPooler] = WeightedMaxPooler,
+    mask_pooler: Type[MaskPooler] = WeightedMaxPooler,
 ) -> Pipeline2:
     """
     Factory function to create an instance of Pipeline2 with default configuration.
@@ -147,7 +145,7 @@ def create_pipeline(
     """
     config = PipelineConfig(
         prompts=init_prompts,
-        mask_pooler=pooler,
+        mask_pooler=mask_pooler,
         device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     )
 

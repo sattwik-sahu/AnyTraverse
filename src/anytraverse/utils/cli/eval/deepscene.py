@@ -18,7 +18,7 @@ from anytraverse.config.utils import (
 from anytraverse.utils.datasets.deepscene import DeepsceneDataset
 from anytraverse.utils.helpers.plane_fit import PCAPlaneFitter
 from anytraverse.utils.metrics.iou import iou_score
-from anytraverse.utils.models.clipseg.pooler import (
+from anytraverse.utils.helpers.pooler import (
     WeightedMaxPooler,
     ProbabilisticPooler,
 )

@@ -1,40 +1,39 @@
 from abc import ABC, abstractmethod
 import torch
-from numpy import typing as npt
 import numpy as np
 from typing_extensions import override
 from typing import List, Literal
 
 
-class CLIPSegMaskPooler(ABC):
+class MaskPooler(ABC):
     @staticmethod
     @abstractmethod
     def pool(masks: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         pass
 
 
-class SumPooler(CLIPSegMaskPooler):
+class SumPooler(MaskPooler):
     @staticmethod
     @override
     def pool(masks: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return masks.squeeze(1).sum(dim=0)
 
 
-class MaxPooler(CLIPSegMaskPooler):
+class MaxPooler(MaskPooler):
     @staticmethod
     @override
     def pool(masks: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return masks.squeeze(1).max(dim=0).values
 
 
-class MeanPooler(CLIPSegMaskPooler):
+class MeanPooler(MaskPooler):
     @staticmethod
     @override
     def pool(masks: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return masks.squeeze(1).mean(dim=0)
 
 
-class WeightedSumPooler(CLIPSegMaskPooler):
+class WeightedSumPooler(MaskPooler):
     @staticmethod
     @override
     def pool(
@@ -48,7 +47,7 @@ class WeightedSumPooler(CLIPSegMaskPooler):
         return pooled_mask.squeeze(0)
 
 
-class WeightedMaxPooler(CLIPSegMaskPooler):
+class WeightedMaxPooler(MaskPooler):
     @staticmethod
     @override
     def pool(
@@ -73,7 +72,7 @@ class WeightedMaxPooler(CLIPSegMaskPooler):
         return pooled_mask
 
 
-class ProbabilisticPooler(CLIPSegMaskPooler):
+class ProbabilisticPooler(MaskPooler):
     @staticmethod
     @override
     def pool(
