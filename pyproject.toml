@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12.5"
 dependencies = [
+    "accelerate>=1.7.0",
     "clip",
     "depthai-sdk>=1.15.1",
     "fastapi>=0.115.12",

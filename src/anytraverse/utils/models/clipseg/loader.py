@@ -19,7 +19,7 @@ def load_clipseg_processor_and_model(
     """
     pretrained_model_name = pretrained_model_name or "CIDAS/clipseg-rd64-refined"
     processor = CLIPSegProcessor.from_pretrained(
-        pretrained_model_name, cache_dir="data/weights/clipseg"
+        pretrained_model_name, cache_dir="data/weights/clipseg", use_fast=True
     )
     model = CLIPSegForImageSegmentation.from_pretrained(
         pretrained_model_name, cache_dir="data/weights/clipseg"

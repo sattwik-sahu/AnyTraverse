@@ -43,7 +43,7 @@ from anytraverse.utils.metrics.roi import ROI_Checker
 from anytraverse.utils.models import ImageEmbeddingModel
 from anytraverse.utils.pipelines.base import Pipeline2 as Pipeline
 from anytraverse.utils.pipelines.base import PipelineOutput
-from anytraverse.utils.pipelines.streaming import create_pipeline
+from anytraverse.utils.pipelines.base import create_pipeline
 from anytraverse.utils.viz.human_op import HumanOperatorUI_Axes, get_human_op_ui_axes
 from anytraverse.utils.viz.roi import plot_image_seg_roi
 
