@@ -14,7 +14,7 @@ dependencies = [
     "accelerate>=1.7.0",
     "clip",
     "depthai-sdk>=1.15.1",
-    "fastapi>=0.115.12",
+    "fastapi[uvicorn]>=0.115.12",
     "ftfy>=6.3.1",
     "matplotlib>=3.10.3",
     "numpy>=1.26.4",
@@ -28,6 +28,7 @@ dependencies = [
     "tqdm>=4.67.1",
     "transformers>=4.52.3",
     "typer>=0.15.4",
+    "uvicorn>=0.34.2",
 ]
 
 [project.scripts]
