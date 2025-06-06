@@ -125,6 +125,26 @@ def get_prompts(console: Console = Console()) -> List[WeightedPrompt]:
     return prompts
 
 
+def get_weighted_prompt_from_string(prompts_str: str) -> WeightedPrompt:
+    """
+    Parse a weighted prompt from a string in the format "<prompt>: <weight>; <prompt>: <weight>".
+
+    Args:
+        syntax (str): The string containing the weighted prompt.
+
+    Returns:
+        WeightedPrompt: A tuple containing the prompt and its weight.
+    """
+    prompts: List[WeightedPrompt] = []
+    if prompts_str.count(";") != prompts_str.count(":") - 1:
+        raise
+    for ps in prompts_str.split(";"):
+        ps = ps.strip()
+        p, w = ps.split(":")
+        p, w = p.strip(), w.strip()
+        prompts.append((p, float(w)))
+
+
 def dict_to_table(kv: Dict[str, str]) -> Table:
     table: Table = Table()
     table.add_column("Parameter", style="light_green", justify="left")
@@ -167,9 +187,9 @@ def get_history_pickle_path(video: DatasetVideo, console: Console = Console()) -
     while True:
         try:
             name: str = Prompt.ask("Human operator username")
-            assert (
-                name.isalnum()
-            ), f"Username should be an alphanumeric string, got `{name}`"
+            assert name.isalnum(), (
+                f"Username should be an alphanumeric string, got `{name}`"
+            )
             break
         except AssertionError:
             console.print("Please enter your username correctly...", style="dim red")
@@ -177,6 +197,6 @@ def get_history_pickle_path(video: DatasetVideo, console: Console = Console()) -
     # Create the file
     filepath = (
         Path("data/logs")
-        / f"history_{video.name}_{name}_{datetime.now().strftime("%Y%m%d%H%M%S")}.pkl"
+        / f"history_{video.name}_{name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pkl"
     )
     return filepath

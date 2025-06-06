@@ -9,7 +9,10 @@ from PIL import Image
 from rich.console import Console
 
 from anytraverse.config.utils import WeightedPrompt
-from anytraverse.utils.cli.human_op.io import get_prompts
+from anytraverse.utils.cli.human_op.io import (
+    get_prompts,
+    get_weighted_prompt_from_string,
+)
 from anytraverse.utils.cli.human_op.models import (
     DriveStatus,
     HumanOperatorControllerState,
@@ -89,6 +92,22 @@ class AnyTraverseHOC_Context:
     @property
     def prompts(self) -> list[WeightedPrompt]:
         return self._pipeline.prompts
+
+    def human_call_with_syntax(self, prompts_str: str) -> None:
+        """
+        Perform a human operator call with prompts given in a string
+        following the syntax: "<prompt>: <weight>; <prompt>: <weight>; ...".
+
+        Args:
+            prompts_str (str): The string containing the weighted prompts.
+
+        Raises:
+            ValueError: If the string does not follow the expected syntax.
+        """
+        prompts: list[WeightedPrompt] = get_weighted_prompt_from_string(
+            prompts_str=prompts_str
+        )
+        self.human_call(human_prompts=prompts)
 
     def human_call(self, human_prompts: list[WeightedPrompt]):
         """
