@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from anytraverse.utils.helpers.oakd import OakdCameraPipelineManager
+from anytraverse.utils.helpers.sensors.oakd import OakdCameraManager
 from depthai import Device, Pipeline
 from anytraverse import (
     create_anytraverse_hoc_context as create_anytraverse,
@@ -44,7 +44,7 @@ def main():
 
     pipeline = Pipeline()
 
-    oakd_manager = OakdCameraPipelineManager(
+    oakd_manager = OakdCameraManager(
         pipeline=pipeline,
         rgb_stream_name="rgb",
         pointcloud_stream_name="points",
@@ -67,7 +67,7 @@ def main():
 
         try:
             while True:
-                rgb, points = oakd_manager.get_next_data()
+                rgb, points = oakd_manager.read_img_and_pointcloud()
 
                 # Process all human inputs
                 while not human_command_queue.empty():

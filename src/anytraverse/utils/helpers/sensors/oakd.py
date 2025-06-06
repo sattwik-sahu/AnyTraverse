@@ -1,10 +1,13 @@
 import depthai as dai
-from typing import Callable
 import numpy as np
 from numpy import typing as npt
 
 
-class OakdCameraPipelineManager:
+type Image = npt.NDArray[np.uint8]
+type Pointcloud = npt.NDArray[np.float32]
+
+
+class OakdCameraManager:
     _pcl_config_input: dai.node.XLinkIn
     _device: dai.Device
     _queue: dai.DataOutputQueue
@@ -18,7 +21,7 @@ class OakdCameraPipelineManager:
         pointcloud_stream_name: str = "points",
         min_depth: float = 0.25,
         max_depth: float = 10.0,
-    ) -> Callable[[dai.Device], dai.DataOutputQueue]:
+    ) -> None:
         self._rgb_stream_name = rgb_stream_name
         self._pointcloud_stream_name = pointcloud_stream_name
 
@@ -88,20 +91,22 @@ class OakdCameraPipelineManager:
     def setup_with_device(self, device: dai.Device) -> None:
         self._device = device
         self._pcl_config_input = device.getInputQueue(
-            name="config", maxSize=4, blocking=False
+            name="config",
+            maxSize=4,  # type: ignore
+            blocking=False,  # type: ignore
         )
-        self._queue = device.getOutputQueue(name="out", maxSize=4, blocking=False)
+        self._queue = device.getOutputQueue(name="out", maxSize=4, blocking=False)  # type: ignore
 
-    def get_next_data(
+    def read_img_and_pointcloud(
         self,
         cam_to_world_transform: npt.NDArray[np.float32] = np.eye(4, dtype=np.float32),
-    ) -> tuple[npt.NDArray[np.uint8], npt.NDArray[np.float32]]:
+    ) -> tuple[Image, Pointcloud]:
         if not self._device.isPipelineRunning():
             raise RuntimeError("Pipeline is not running. Call setup_with_device first.")
 
         in_msg = self._queue.get()
-        in_rgb = in_msg[self._rgb_stream_name]
-        in_pcl = in_msg[self._pointcloud_stream_name]
+        in_rgb = in_msg[self._rgb_stream_name]  # type: ignore
+        in_pcl = in_msg[self._pointcloud_stream_name]  # type: ignore
 
         # Get the color RGB frame
         rgb_frame = in_rgb.getCvFrame()
@@ -115,6 +120,6 @@ class OakdCameraPipelineManager:
         pointcloud_config = dai.PointCloudConfig()
         pointcloud_config.setTransformationMatrix(cam_to_world_transform)
         pointcloud_config.setSparse(False)
-        self._pcl_config_input.send(pointcloud_config)
+        self._pcl_config_input.send(pointcloud_config)  # type: ignore
 
         return rgb_frame, points
