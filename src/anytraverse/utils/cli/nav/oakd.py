@@ -11,6 +11,9 @@ from anytraverse.utils.helpers.sensors.oakd import OakdCameraManager
 from anytraverse.utils.helpers.grid_costmap import GridCostmap
 from anytraverse.utils.pipelines.ws_human_op import AnyTraverseWebsocket
 from threading import Thread
+from anytraverse.utils.helpers.robots.unitree_ws import UnitreeController
+
+import asyncio
 
 # TODO Uncomment this and start working on robot control
 # from anytraverse.utils.helpers.robots.unitree_go1 import CommandBuilder, RobotController
@@ -56,7 +59,7 @@ def show_costmap_with_path(
     cv2.imshow("Costmap with Path", img)
 
 
-def main():
+async def main():
     # Create the AnyTraverse pipeline
     anytraverse = create_anytraverse_hoc_context(
         init_prompts=[("floor", 1.0), ("mat", -0.5), ("shoes", -0.8)],
@@ -78,8 +81,8 @@ def main():
     costmap = GridCostmap(x_bound=8, y_bound=5, resolution=0.2)
 
     # Create the robot utils
-    # command = CommandBuilder()
-    # robot = RobotController()
+    robot = UnitreeController(hostname="localhost", port=6969)
+    await robot.connect()
 
     # Connect to the device
     with depthai.Device(pipeline=depthai_pipeline) as depthai_device:
@@ -96,7 +99,7 @@ def main():
             pil_image = PILImage.fromarray(image)
             # ws_hoc.lock.acquire()
             anytraverse_state = anytraverse.run_next(frame=pil_image)
-            prompts = anytraverse.prompts
+            # prompts = anytraverse.prompts
             # ws_hoc.lock.release()
 
             # Print prompts
@@ -150,20 +153,12 @@ def main():
             w0, w1 = path[[0, int(1.0 / costmap._resolution)], ::-1] - np.array(
                 [start_point]
             )
-            w1 = w1 - w0
 
-            # vel, yaw = CommandBuilder.compute_velocity(
-            #     start=np.zeros_like(w1), target=w1
-            # )
-            # robot.send_command(velocity=vel, yaw_speed=yaw)
-
-            # angle = np.rad2deg((np.arctan2(*(w1 - w0)[::-1]) - np.pi) % (2 * np.pi))
-            # print(f"Turn {angle} deg")
-            # print(f"Waypoints = {waypoints.tolist()}")
-            # print(f"Turn by: {np.rad2deg(np.arctan2(waypoints))}")
+            print("Sending command to robot: ", w0, w1)
+            await robot.send_command(start=w0, goal=w1)
 
             cv2.waitKey(1)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
