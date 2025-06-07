@@ -6,6 +6,4 @@ import asyncio
 app = typer.Typer(name="navigate", help="Navigation with AnyTraverse")
 
 
-app.command(name="oakd", help="Run Unitree Go 1 with OAK-D Camera")(
-    lambda: asyncio.run(oakd_main())
-)
+app.command(name="oakd", help="Run Unitree Go 1 with OAK-D Camera")(oakd_main)
