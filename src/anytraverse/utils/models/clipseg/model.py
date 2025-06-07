@@ -4,6 +4,10 @@ from anytraverse.utils.models.clipseg.loader import load_clipseg_processor_and_m
 from typing import Tuple, Dict, Any, List, Literal
 from PIL.Image import Image, open as open_image, Resampling
 from pathlib import Path
+from anytraverse.utils.helpers import DEVICE
+
+
+torch.set_default_device(device=DEVICE)
 
 
 CLIPSegInputEncoded = BatchEncoding | Dict[str, Any]
@@ -27,7 +31,7 @@ class CLIPSeg:
         self._processor, self._model = load_clipseg_processor_and_model(
             pretrained_model_name=model_name
         )
-        self._model = self._model.to(device=self._device)  # type: ignore
+        self._model = self._model.to(device=DEVICE)  # type: ignore
 
     def _preprocess(
         self, prompts: List[str], image: Image | Path | str
@@ -47,7 +51,7 @@ class CLIPSeg:
             mode="bicubic",
             align_corners=True,
         )
-        return image, x
+        return image, x.to(device=DEVICE)
 
     def _run(self, x: CLIPSegInputEncoded) -> torch.Tensor:
         # No gradients
@@ -85,8 +89,13 @@ class CLIPSeg:
             torch.Tensor:
                 The model output, with dimensions `(N, 1, H, W)`
         """
-        image, x = self._preprocess(prompts=prompts, image=image)
-        y = self._run(x=x)
-        image_size = image.size[:-3:-1]
-        output = self._postprocess(y=y, image_size=image_size)  # type: ignore
+        masks: List[str] = []
+        for prompt in prompts:
+            image, x = self._preprocess(prompts=[prompt], image=image)
+            y = self._run(x=x)
+            image_size = image.size[:-3:-1]
+            output = self._postprocess(y=y, image_size=image_size)  # type: ignore
+            masks.append(output.squeeze(0))  # Add batch dimension
+        # Stack all masks into a single tensor
+        output = torch.stack(masks, dim=0)
         return output

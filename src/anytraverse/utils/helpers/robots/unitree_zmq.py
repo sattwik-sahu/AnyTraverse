@@ -1,9 +1,8 @@
 import json
+import zmq
 from typing import TypedDict
-
 import numpy as np
 from numpy import typing as npt
-import websockets
 
 
 class Command(TypedDict):
@@ -15,22 +14,21 @@ class UnitreeController:
     def __init__(self, hostname: str = "localhost", port: int = 6969) -> None:
         self._hostname = hostname
         self._port = port
-        self._ws: websockets.ClientConnection | None = None
+        self._context = zmq.Context()
+        self._socket = self._context.socket(zmq.REQ)
 
-    async def connect(self) -> None:
-        self._ws = await websockets.connect(f"ws://{self._hostname}:{self._port}")
-        print(f"Connected to Unitree controller at ws://{self._hostname}:{self._port}")
-        # await asyncio.sleep(5)
+    def connect(self) -> None:
+        self._socket.connect(f"tcp://{self._hostname}:{self._port}")
+        print(f"Connected to Unitree controller at tcp://{self._hostname}:{self._port}")
 
-    async def send_command(
+    def send_command(
         self, start: npt.NDArray[np.int16], goal: npt.NDArray[np.int16]
     ) -> None:
-        if self._ws is None:
-            raise RuntimeError("WebSocket connection is not established.")
-
         command: Command = {
             "start": tuple(start.tolist()),
             "target": tuple(goal.tolist()),
         }
-        await self._ws.send(json.dumps(command))
+        self._socket.send_json(command)
+        response = self._socket.recv_json()
+        response["yaw_speed"] = np.round(np.rad2deg(response["yaw_speed"]), decimals=3)
         print(f"Sent command: {command}")
