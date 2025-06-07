@@ -23,16 +23,16 @@ class UnitreeController:
 
     def send_command(
         self, start: npt.NDArray[np.int16], goal: npt.NDArray[np.int16]
-    ) -> dict:
+    ) -> None:
         command: Command = {
             "start": tuple(start.tolist()),
             "target": tuple(goal.tolist()),
         }
         self._socket.send_json(command)
-        response = self._socket.recv_json()
-        response["yaw_speed"] = np.round(np.rad2deg(response["yaw_speed"]), decimals=3)
-        print(f"Sent command: {command}")
-        return response
+        # response = self._socket.recv_json()
+        # response["yaw_speed"] = np.round(np.rad2deg(response["yaw_speed"]), decimals=3)
+        # print(f"Sent command: {command}")
+        # return response
 
     def stop_robot(self) -> None:
         self.send_command(
