@@ -115,7 +115,7 @@ def main():
             d_star.plan()
 
             start_point = (
-                costmap._height - int(1.0 / costmap._resolution),
+                costmap._height - int(0.20 / costmap._resolution),
                 costmap._width // 2,
             )[::-1]
 
@@ -124,13 +124,12 @@ def main():
             path, _ = d_star.query(start=start_point)
             show_costmap_with_path(costmap=costmap_grid, path=path.tolist())
 
-            if len(path) > int(1.0 / costmap._resolution):
-                # Select initial motion direction
-                w0, w1 = path[[0, int(1.0 / costmap._resolution)]]
-                w0[1],w1[1] = costmap._height - w0[1], costmap._height - w1[1]
-                print("Sending command to robot:", w0, w1)
-
-                robot.send_command(start=w0, goal=w1)
+            # if len(path) > int(1.0 / costmap._resolution):
+            # Select initial motion direction
+            w0, w1 = path[[0, int(0.7 / costmap._resolution)]]
+            w0[1],w1[1] = costmap._height - w0[1], costmap._height - w1[1]
+            print("Sending command to robot:", w0, w1)
+            robot.send_command(start=w0, goal=w1)
 
             cv2.waitKey(1)
 
