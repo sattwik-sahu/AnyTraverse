@@ -68,7 +68,6 @@ def show_costmap_with_path(
         (img.shape[1] * 10, img.shape[0] * 10),
         interpolation=cv2.INTER_NEAREST,
     )
-    # cv2.imshow("Costmap with Path", img)
     return img
 
 
@@ -106,6 +105,8 @@ def main(
         Path, typer.Option("-o", help="Output directory to store all logs")
     ] = Path("data/logs/nav/"),
 ):
+    global EXIT
+
     # Create AnyTraverse context
     anytraverse = create_anytraverse_hoc_context(
         init_prompts=str_to_prompts(prompts_str=init_prompts),
@@ -141,9 +142,12 @@ def main(
         while not EXIT:
             image, pointcloud = oakd.read_img_and_pointcloud()
             pil_image = PILImage.fromarray(image)
-            anytraverse_state = anytraverse.run_next(frame=pil_image)
 
-            print(anytraverse_state.trav_map.device)
+            # Run AnyTraverse on current frame
+            ws_hoc.lock.acquire()
+            anytraverse_state = anytraverse.run_next(frame=pil_image)
+            hoc_status = anytraverse_state.human_call
+            ws_hoc.lock.release()
 
             # Convert traversal map to costs
             costs = 1 - (
@@ -196,20 +200,21 @@ def main(
             w0, w1 = path[[0, int(looakahead / costmap._resolution)]]
             w0[1], w1[1] = costmap._height - w0[1], costmap._height - w1[1]
 
+            """
+            If human operator call required, just notify human
+            No need to stop or sleep or perform anything on the robot.
+
+            TODO Calibrate AnyTraverse params properly then make the robot
+            stop, or do something.
+            """
             if anytraverse_state.human_call is not DriveStatus.OK:
-                w1 = w0
                 print(
                     f"HELP [{anytraverse_state.human_call}]! Human operator call required"
                 )
-                robot.stop_robot()
-                time.sleep(1)
+                ws_hoc.human_call(status=hoc_status)  # type: ignore
 
             print("Sending command to robot:", w0, w1)
             robot.send_command(start=w0, goal=w1)
-            # if type(response) is dict and len(response.values()) == 2:
-            #     velocity, yaw = response.values()
-            # else:
-            #     velocity, yaw = 0, 0
 
             cv2.waitKey(1)
             print(f"PROMPTS = {anytraverse.prompts}")
