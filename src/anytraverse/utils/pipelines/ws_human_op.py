@@ -1,13 +1,18 @@
-from anytraverse.utils.cli.human_op.hoc_ctx import AnyTraverseHOC_Context
+from anytraverse.utils.cli.human_op.hoc_ctx import AnyTraverseHOC_Context, DriveStatus
 from websockets.sync.server import serve, ServerConnection
+
 from threading import Lock
+from typing import Callable
+import json
 
 
 class AnyTraverseWebsocket:
     _anytraverse: AnyTraverseHOC_Context
+    _human_call: Callable[[DriveStatus], None]
 
     _hostname: str
     _port: int
+    _clients: list[ServerConnection]
 
     _lock: Lock
 
@@ -27,21 +32,29 @@ class AnyTraverseWebsocket:
     def lock(self) -> Lock:
         return self._lock
 
+    def _broadcast(self, msg: str) -> None:
+        for client in self._clients:
+            client.send(msg)
+
+    def human_call(self, status: DriveStatus) -> None:
+        msg = json.dumps({"msg": "HOC required!", "type": status.value})
+        self._broadcast(msg=msg)
+
     def _handler(self, websocket: ServerConnection) -> None:
         for message in websocket:
             print(websocket)
             print(f"Message >>> {message} [type: {type(message)}]")
             try:
-                # self._lock.acquire()
+                self._lock.acquire()
                 self._anytraverse.human_call_with_syntax(prompts_str=str(message))  # type: ignore
             except Exception as ex:
                 print("Error in human operator call")
                 raise ex
             finally:
-                # self._lock.release()
-                pass
-            websocket.send(
-                message=f"Set prompts to: {str(dict(self._anytraverse.prompts))}"
+                self._lock.release()
+
+            self._broadcast(
+                msg=f"Updated prompts: {str(dict(self._anytraverse.prompts))}"
             )
 
     def start(self) -> None:
@@ -51,6 +64,7 @@ class AnyTraverseWebsocket:
             print(
                 f"Starting AnyTraverse HOC server on ws://{self._hostname}:{self._port}"
             )
+
             self._server.serve_forever()
 
     def shutdown(self) -> None:
