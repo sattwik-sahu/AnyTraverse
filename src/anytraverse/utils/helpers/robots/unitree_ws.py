@@ -1,36 +1,28 @@
+import websockets
 import json
 from typing import TypedDict
-
-import numpy as np
-from numpy import typing as npt
-import websockets
+from anytraverse.utils.helpers.robots.unitree_go1 import RobotController
 
 
-class Command(TypedDict):
-    start: tuple[int, int]
-    target: tuple[int, int]
+type CommandVel = float | list[float]
 
 
-class UnitreeController:
-    def __init__(self, hostname: str = "localhost", port: int = 6969) -> None:
-        self._hostname = hostname
-        self._port = port
-        self._ws: websockets.ClientConnection | None = None
+class ControlCommand(TypedDict):
+    velocity: CommandVel
+    yaw_speed: float
 
-    async def connect(self) -> None:
-        self._ws = await websockets.connect(f"ws://{self._hostname}:{self._port}")
-        print(f"Connected to Unitree controller at ws://{self._hostname}:{self._port}")
-        # await asyncio.sleep(5)
 
-    async def send_command(
-        self, start: npt.NDArray[np.int16], goal: npt.NDArray[np.int16]
-    ) -> None:
-        if self._ws is None:
-            raise RuntimeError("WebSocket connection is not established.")
+class UnitreeWebsocketServer:
+    def __init__(self, host: str = "0.0.0.0", port: int = 6969) -> None:
+        self._robot = RobotController()
 
-        command: Command = {
-            "start": tuple(start.tolist()),
-            "target": tuple(goal.tolist()),
-        }
-        await self._ws.send(json.dumps(command))
-        print(f"Sent command: {command}")
+    def _convert_to_unitree_command(self, control: ControlCommand) -> ControlCommand:
+        if type(control["velocity"]) is float:
+            control["velocity"] = [control["velocity"], 0.0]
+        return control
+
+    def send_control(self, velocity: CommandVel, yaw_speed: float) -> None:
+        pass
+
+    def connect(self) -> None:
+        pass

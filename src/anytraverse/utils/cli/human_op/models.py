@@ -101,4 +101,4 @@ class HumanOperatorControllerState:
     # anytraverse_output: PipelineOutput
     unc_roi: float
     trav_roi: float
-    human_call: DriveStatus | None
+    human_call: DriveStatus

@@ -6,7 +6,7 @@ from typing import Tuple, List
 import numpy as np
 
 # Add your robot SDK path
-sys.path.append("../lib/python/amd64")
+# sys.path.append("../lib/python/amd64")
 import robot_interface as sdk  # type: ignore
 
 

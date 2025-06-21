@@ -7,6 +7,8 @@ from PIL import Image
 from typing import Optional, TypedDict
 import pandas as pd
 from datetime import datetime as Datetime
+from anytraverse.config.utils import WeightedPrompt
+import json
 
 
 class FrameData(TypedDict):
@@ -47,7 +49,7 @@ class AnyTraverseLogger:
             columns=["trav_roi", "unc_roi", "prompts", "timestamp"]
         )
 
-        self.writer: Optional[cv2.VideoWriter] = None
+        self.writer: cv2.VideoWriter | None = None
         self.fps = fps
         self.frame_size: Optional[tuple[int, int]] = None
 
@@ -113,7 +115,9 @@ class AnyTraverseLogger:
 
         return combined
 
-    def add_data(self, trav_roi: float, unc_roi: float, prompts: float) -> None:
+    def add_data(
+        self, trav_roi: float, unc_roi: float, prompts: list[WeightedPrompt]
+    ) -> None:
         """
         Adds metadata for the current frame to the log.
 
@@ -123,7 +127,7 @@ class AnyTraverseLogger:
             prompts (float): Prompts value.
         """
         timestamp = Datetime.now()
-        self.log_df.loc[self.log_df.shape[0]] = {
+        self.log_df.loc[self.log_df.shape[0]] = {  # type: ignore
             "trav_roi": trav_roi,
             "unc_roi": unc_roi,
             "prompts": prompts,

@@ -1,47 +1,76 @@
-import json
 import zmq
+from abc import ABC, abstractmethod
+from typing_extensions import override
 from typing import TypedDict
-import numpy as np
-from numpy import typing as npt
+import json
+import time
 
 
-class Command(TypedDict):
+class RobotWaypointCommand(TypedDict):
     start: tuple[int, int]
     target: tuple[int, int]
 
-class ControlCommand(TypedDict):
-    velocity: float
+
+class RobotControlCommand(TypedDict):
+    velocity: list[float]
     yaw_speed: float
 
 
-class UnitreeController:
-    def __init__(self, hostname: str = "localhost", port: int = 6969) -> None:
-        self._hostname = hostname
-        self._port = port
-        self._context = zmq.Context()
-        self._socket = self._context.socket(zmq.REQ)
+RobotCommand = RobotControlCommand | RobotWaypointCommand
 
-    def connect(self) -> None:
-        self._socket.connect(f"tcp://{self._hostname}:{self._port}")
-        print(f"Connected to Unitree controller at tcp://{self._hostname}:{self._port}")
 
-    def send_command(
-        self, start: npt.NDArray[np.int16], goal: npt.NDArray[np.int16]
-    ) -> None:
-        command: Command = {
-            "start": tuple(start.tolist()),
-            "target": tuple(goal.tolist()),
-        }
-        self._socket.send_json(command)
-        response = self._socket.recv_json()
-        print(f"[ROBOT] >>> {response}")
+class ZMQPublisher[TMessage](ABC):
+    """
+    A class-based ZeroMQ Publisher using PUB socket.
 
-    def send_control(self, velocity: float, yaw_speed: float) -> None:
-        control_command: ControlCommand = {
-            "velocity": velocity,
-            "yaw_speed": yaw_speed,
-        }
-        self._socket.send_json(control_command)
-        response = self._socket.recv_json()
-        print(f"[ROBOT] >>> {response}")
+    Attributes:
+        address (str): The IPC or TCP address to bind to.
+        context (zmq.Context): The ZeroMQ context.
+        socket (zmq.Socket): The PUB socket.
+    """
 
+    def __init__(self, address: str) -> None:
+        """
+        Initializes the ZMQPublisher.
+
+        Args:
+            address (str): Address to bind the publisher to.
+        """
+        self.address = "tcp://*:5555"
+        self.context = zmq.Context.instance()
+        self.socket = self.context.socket(zmq.PUB)
+        self.socket.setsockopt(zmq.SNDHWM, 10)  # Optional: High-water mark for queuing
+        self.socket.bind(self.address)
+        time.sleep(0.5)
+        
+
+    @abstractmethod
+    def serialize_message(self, message: TMessage) -> str:
+        pass
+
+    def send(self, topic: str, message: TMessage) -> None:
+        """
+        Sends a message with a topic prefix.
+
+        Args:
+            topic (str): Topic string used by subscribers to filter.
+            message (str): The message to send.
+        """
+        serialized_message = self.serialize_message(message=message)
+        full_msg = f"{topic} {serialized_message}"
+        print(f"[SOCKET] > {full_msg}")
+        self.socket.send_string(full_msg)
+
+    def close(self) -> None:
+        """Closes the socket and terminates the context."""
+        self.socket.close()
+        self.context.term()
+
+
+class UnitreeZMQPublisher(ZMQPublisher[RobotCommand]):
+    def __init__(self) -> None:
+        super().__init__(address="anytraverse")
+
+    @override
+    def serialize_message(self, message: RobotCommand) -> str:
+        return json.dumps(message)
