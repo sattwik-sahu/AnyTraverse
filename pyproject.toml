@@ -16,6 +16,7 @@ dependencies = [
     "depthai-sdk>=1.15.1",
     "fastapi>=0.115.12",
     "ftfy>=6.3.1",
+    "imutils>=0.5.4",
     "matplotlib>=3.10.3",
     "numpy>=1.26.4",
     "regex>=2024.11.6",

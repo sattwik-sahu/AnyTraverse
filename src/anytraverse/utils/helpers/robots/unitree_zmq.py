@@ -9,6 +9,10 @@ class Command(TypedDict):
     start: tuple[int, int]
     target: tuple[int, int]
 
+class ControlCommand(TypedDict):
+    velocity: float
+    yaw_speed: float
+
 
 class UnitreeController:
     def __init__(self, hostname: str = "localhost", port: int = 6969) -> None:
@@ -30,5 +34,14 @@ class UnitreeController:
         }
         self._socket.send_json(command)
         response = self._socket.recv_json()
-        response["yaw_speed"] = np.round(np.rad2deg(response["yaw_speed"]), decimals=3)
-        print(f"Sent command: {command}")
+        print(f"[ROBOT] >>> {response}")
+
+    def send_control(self, velocity: float, yaw_speed: float) -> None:
+        control_command: ControlCommand = {
+            "velocity": velocity,
+            "yaw_speed": yaw_speed,
+        }
+        self._socket.send_json(control_command)
+        response = self._socket.recv_json()
+        print(f"[ROBOT] >>> {response}")
+

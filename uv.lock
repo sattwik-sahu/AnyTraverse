@@ -82,6 +82,7 @@ dependencies = [
     { name = "depthai-sdk" },
     { name = "fastapi" },
     { name = "ftfy" },
+    { name = "imutils" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "regex" },
@@ -116,6 +117,7 @@ requires-dist = [
     { name = "depthai-sdk", specifier = ">=1.15.1" },
     { name = "fastapi", specifier = ">=0.115.12" },
     { name = "ftfy", specifier = ">=6.3.1" },
+    { name = "imutils", specifier = ">=0.5.4" },
     { name = "matplotlib", specifier = ">=3.10.3" },
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "regex", specifier = ">=2024.11.6" },
@@ -749,6 +751,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/f1/70/7703c29685631f5a7
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3", size = 70442 },
 ]
+
+[[package]]
+name = "imutils"
+version = "0.5.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/d3/ecb4d108f6c1041d24842a345ee0123cd7f366ba75cf122601e856d42ba2/imutils-0.5.4.tar.gz", hash = "sha256:03827a9fca8b5c540305c0844a62591cf35a0caec199cb0f2f0a4a0fb15d8f24", size = 17240 }
 
 [[package]]
 name = "iniconfig"

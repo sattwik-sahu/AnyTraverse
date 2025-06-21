@@ -104,6 +104,9 @@ class AnyTraverseHOC_Context:
         Raises:
             ValueError: If the string does not follow the expected syntax.
         """
+        if len(prompts_str.strip()) == 0:
+            self.human_call(human_prompts=self.prompts)
+            return
         prompts: list[WeightedPrompt] = get_weighted_prompt_from_string(
             prompts_str=prompts_str
         )

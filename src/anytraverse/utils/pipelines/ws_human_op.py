@@ -31,15 +31,15 @@ class AnyTraverseWebsocket:
         for message in websocket:
             print(websocket)
             print(f"Message >>> {message} [type: {type(message)}]")
-            try:
-                # self._lock.acquire()
-                self._anytraverse.human_call_with_syntax(prompts_str=str(message))  # type: ignore
-            except Exception as ex:
-                print("Error in human operator call")
-                raise ex
-            finally:
-                # self._lock.release()
-                pass
+            with self._lock:
+                if message.lower() == "ok":
+                    self._anytraverse.human_call_with_syntax("")
+                    continue
+                try:
+                    self._anytraverse.human_call_with_syntax(prompts_str=message)  # type: ignore
+                except Exception as ex:
+                    print("Error in human operator call")
+                    raise ex
             websocket.send(
                 message=f"Set prompts to: {str(dict(self._anytraverse.prompts))}"
             )

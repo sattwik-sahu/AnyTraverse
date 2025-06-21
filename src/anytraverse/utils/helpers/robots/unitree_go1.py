@@ -71,7 +71,7 @@ class RobotController:
 
     def send_command(
         self,
-        velocity: List[float],
+        velocity: list[float] | float,
         yaw_speed: float,
         gait: int = 1,
         mode: int = 2,
@@ -91,12 +91,16 @@ class RobotController:
             foot_raise: foot raise height.
             delay: optional delay before sending.
         """
+        if type(velocity) is float:
+            velocity = [velocity, 0.0]
+
         self.cmd.mode = mode
         self.cmd.gaitType = gait
         self.cmd.velocity = velocity
         self.cmd.yawSpeed = yaw_speed
         self.cmd.bodyHeight = body_height
         self.cmd.footRaiseHeight = foot_raise
+        print("COMMAND SENT")
 
         time.sleep(delay)
         self.udp.SetSend(self.cmd)
