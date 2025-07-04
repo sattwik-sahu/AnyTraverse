@@ -16,10 +16,7 @@ from anytraverse.utils.helpers.sensors.oakd import OakdCameraManager
 # from anytraverse.utils.helpers.grid_costmap import GridCostmap
 from anytraverse.utils.pipelines.ws_human_op import AnyTraverseWebsocket
 from threading import Thread
-from anytraverse.utils.helpers.robots.unitree_zmq import (
-    UnitreeZMQPublisher,
-    RobotCommand,
-)
+from anytraverse.utils.helpers.robots.unitree_zmq import UnitreeZMQPublisher
 from anytraverse.utils.helpers import DEVICE
 from anytraverse.utils.helpers.log.frame_logger import AnyTraverseLogger
 
@@ -64,7 +61,7 @@ def main():
     robot_command_publisher = UnitreeZMQPublisher()
 
     # Logger
-    frame_logger = AnyTraverseLogger(save_dir="data/nav", fps=10)
+    frame_logger = AnyTraverseLogger(save_dir="data/nav_simple", fps=10)
 
     # Start OAK-D device
     with depthai.Device(pipeline=depthai_pipeline) as depthai_device:
@@ -84,15 +81,16 @@ def main():
                     )
                     print(f"Status: {anytraverse_state.human_call.value}")
 
-                    velocity: float = 0.0
-                    yaw_speed: float = 0.0
+                    # velocity: float = 0.0
+                    # yaw_speed: float = 0.0
 
                     if (
                         anytraverse_state.unc_roi > 0.25
                         or anytraverse_state.trav_roi < 0.5
                     ):
                         if not TURNING_TO_AVOID:
-                            TURN_DIR = np.random.choice([-1, 1])
+                            # TURN_DIR = np.random.choice([-1, 1])
+                            TURN_DIR = 1
                             TURNING_TO_AVOID = True
                             velocity = 0.0
                             yaw_speed = TURN_DIR * np.deg2rad(45)

@@ -19,6 +19,7 @@ dependencies = [
     "imutils>=0.5.4",
     "matplotlib>=3.10.3",
     "numpy>=1.26.4",
+    "oakd-sensor",
     "regex>=2024.11.6",
     "rich>=14.0.0",
     "scikit-learn>=1.6.1",
@@ -46,3 +47,4 @@ planning = ["roboticstoolbox-python>=1.1.1"]
 
 [tool.uv.sources]
 clip = { git = "https://github.com/openai/CLIP.git" }
+oakd-sensor = { git = "https://gitlab.com/sattwik-sahu/oakd-sensor.git" }
