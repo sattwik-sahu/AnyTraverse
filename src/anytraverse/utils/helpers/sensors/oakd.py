@@ -25,6 +25,8 @@ class OakdCameraManager:
         self._rgb_stream_name = rgb_stream_name
         self._pointcloud_stream_name = pointcloud_stream_name
 
+        self._pipeline = pipeline
+
         # Create some nodes
         cam_rgb = pipeline.create(dai.node.ColorCamera)
         mono_left = pipeline.create(dai.node.MonoCamera)
@@ -87,6 +89,10 @@ class OakdCameraManager:
         config_input = pipeline.create(dai.node.XLinkIn)
         config_input.setStreamName(streamName="config")
         config_input.out.link(pointcloud_node.inputConfig)
+
+    @property
+    def pipeline(self) -> dai.Pipeline:
+        return self._pipeline
 
     def setup_with_device(self, device: dai.Device) -> None:
         self._device = device
