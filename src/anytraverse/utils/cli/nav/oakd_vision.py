@@ -4,9 +4,7 @@ from enum import Enum
 from threading import Thread
 from typing import Callable
 
-import cv2
 import depthai
-import imutils
 import numpy as np
 import torch
 from numpy import typing as npt
@@ -26,7 +24,6 @@ from anytraverse.utils.cli.human_op.hoc_ctx import (
 )
 from anytraverse.utils.cli.human_op.io import get_weighted_prompt_from_string
 from anytraverse.utils.cli.human_op.models import DriveStatus
-from anytraverse.utils.helpers import DEVICE
 from anytraverse.utils.helpers import mask_poolers as mask_poolers
 from anytraverse.utils.helpers.log.frame_logger import AnyTraverseLogger
 from anytraverse.utils.helpers.robots.unitree_zmq import (
@@ -34,10 +31,7 @@ from anytraverse.utils.helpers.robots.unitree_zmq import (
     UnitreeZMQPublisher,
 )
 from anytraverse.utils.helpers.sensors.oakd import OakdCameraManager
-from anytraverse.utils.metrics.roi import ROI_Checker
 from anytraverse.utils.pipelines.ws_human_op import AnyTraverseWebsocket
-
-from functools import partialmethod
 
 type FuncControlRobot[TControlCommand] = Callable[[TControlCommand], None]
 type NpImage = npt.NDArray[np.uint8]
