@@ -7,6 +7,7 @@ from anytraverse.config.pipeline_002 import PipelineConfig, WeightedPrompt
 from anytraverse.utils.models.clipseg.model import CLIPSeg
 
 from anytraverse.utils.helpers.mask_poolers import MaskPooler, WeightedMaxPooler
+from anytraverse.utils.helpers import DEVICE
 
 from typing import List, NamedTuple, Type
 
@@ -146,7 +147,7 @@ def create_pipeline(
     config = PipelineConfig(
         prompts=init_prompts,
         mask_pooler=mask_pooler,
-        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        device=DEVICE,
     )
 
     return Pipeline2(config=config)

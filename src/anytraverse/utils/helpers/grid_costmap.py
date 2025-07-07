@@ -106,7 +106,7 @@ class GridCostmap:
         costs: npt.NDArray[np.float32],
         sigma: float = 1.0,
         alpha: float = 0.75,
-    ) -> None:
+    ) -> npt.NDArray[np.int16]:
         """
         Update the grid costmap with point costs and apply Gaussian smoothing.
         Args:
@@ -122,18 +122,16 @@ class GridCostmap:
         points = valid_points
         costs = costs[valid_mask]
 
-        rows, cols = self._convert_pointcloud_to_indices(points).T
+        valid_inxs = self._convert_pointcloud_to_indices(points).T
+        rows, cols = valid_inxs
 
         temp_grid = np.zeros_like(self._grid, dtype=np.float32)
         temp_grid[rows, cols] = costs
 
-        # for (row, col), cost in zip(indices, costs):
-        #     if 0 <= row < self._height and 0 <= col < self._width:
-        #         temp_grid[row, col] += cost
-
         self._grid = self._grid * alpha + (1 - alpha) * gaussian_filter(
             temp_grid, sigma=sigma
         )
+        return valid_inxs
 
     def grid_index_to_point2d(self, row: int, col: int) -> tuple[float, float]:
         """

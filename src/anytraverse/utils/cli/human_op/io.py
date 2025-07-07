@@ -125,17 +125,17 @@ def get_prompts(console: Console = Console()) -> List[WeightedPrompt]:
     return prompts
 
 
-def get_weighted_prompt_from_string(prompts_str: str) -> WeightedPrompt:
+def get_weighted_prompt_from_string(prompts_str: str) -> list[WeightedPrompt]:
     """
     Parse a weighted prompt from a string in the format "<prompt>: <weight>; <prompt>: <weight>".
 
     Args:
-        syntax (str): The string containing the weighted prompt.
+        syntax (str): The string in the weighted prompt syntax.
 
     Returns:
-        WeightedPrompt: A tuple containing the prompt and its weight.
+        list[WeightedPrompt]: A list of tuple containing the prompts and their weights.
     """
-    prompts: List[WeightedPrompt] = []
+    prompts: list[WeightedPrompt] = []
     if prompts_str.count(";") != prompts_str.count(":") - 1:
         raise
     for ps in prompts_str.split(";"):
@@ -143,6 +143,7 @@ def get_weighted_prompt_from_string(prompts_str: str) -> WeightedPrompt:
         p, w = ps.split(":")
         p, w = p.strip(), w.strip()
         prompts.append((p, float(w)))
+    return prompts
 
 
 def dict_to_table(kv: Dict[str, str]) -> Table:

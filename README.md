@@ -1,69 +1,42 @@
-# CLIPSEG Offroad Navigation
+# AnyTraverse
 
-For Vision-Language Based Offroad Navigation.
+Offroad traversability segmentation with VLMs and human-in-the-loop.
 
 ## Installation
 
-Follow the steps below to set up the project in a Python virtual environment, install Poetry, and configure PyTorch based on your system requirements.
-
-### 1. Set Up a Python Virtual Environment
-
-First, create and activate a Python virtual environment to isolate the project dependencies:
-
-**On Linux/macOS:**
+### For `x86` and `amd64` Systems
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+pip install anytraverse   # For pip users
+uv add anytraverse        # For uv users
 ```
 
-**On Windows:**
+It is recommended to use the [`uv` package manager](https://docs.astral.sh/uv/).
+
+### For Embedded Systems and Other Architectures
+
+Install the AnyTraverse package from the GitHub repo [using `uv`](https://docs.astral.sh/uv/pip/packages/#installing-a-package:~:text=ruff%20%40%20./projects/ruff%22-,To%20install%20a%20package%20from%20GitHub,-%3A)
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+uv add anytraverse @ git+https://github.com/sattwik-sahu/AnyTraverse.git
 ```
 
-### 2. Install Poetry
+This will install AnyTraverse using the main branch of the git repository. For other branches, append `@<branch-name>` after the repo URL.
 
-If Poetry is not installed on your system, you can install it by following the official instructions:
+> For systems requiring special builds of torch (e.g. Jetson `aarch64` machines), install using the instructions for the specific machine after installing with the above command.
 
-```bash
-curl -sSL https://install.python-poetry.org | python3 -
-```
+---
 
-After installation, ensure Poetry is in your system's PATH by running:
+## Usage
 
-```bash
-poetry --version
-```
+_Coming soon..._
 
-### 3. Install Project Dependencies
+---
 
-Once you have activated your virtual environment and installed Poetry, run the following command to install the project dependencies:
+## Contributing
 
-```bash
-poetry install
-```
+_Coming soon..._
 
-### 4. Install PyTorch (CPU or GPU)
+---
 
-This project supports both CPU and GPU versions of PyTorch. Follow the appropriate instructions based on your system configuration.
-
-#### Option 1: Install PyTorch (CPU Version)
-
-To install the CPU version of PyTorch, use the following command:
-
-```bash
-poetry install --extras "pytorch-cpu" --source pytorch-cpu
-```
-
-#### Option 2: Install PyTorch (GPU Version)
-
-To install the GPU version of PyTorch (CUDA 12.4), use the following command:
-
-```bash
-poetry install --extras "pytorch-gpu" --source pytorch-gpu
-```
-
-> _Note:_ For different CUDA versions, replace `cu124` with the corresponding version in the `pyproject.toml` or adjust the source URL as needed.
+Made with :heart: in IISER Bhopal.
