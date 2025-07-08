@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Iterable
 
 from anytraverse import typing as anyt
 
@@ -11,7 +10,7 @@ class BaseMapPooler[TInputMap, TPooledMap](ABC):
 
     @staticmethod
     @abstractmethod
-    def pool(maps: Iterable[TInputMap], *args, **kwargs) -> TPooledMap:
+    def pool(maps: list[TInputMap], *args, **kwargs) -> TPooledMap:
         pass
 
 
@@ -26,10 +25,11 @@ class PromptAttentionMapPooler[TOutputMap](
     @staticmethod
     @abstractmethod
     def pool(
-        maps: Iterable[anyt.PromptAttentionMap], prefs: anyt.TraversabilityPreferences
+        maps: list[anyt.PromptAttentionMap],
+        traversability_preferences: anyt.TraversabilityPreferences,
     ) -> TOutputMap:
         pass
 
 
-type TraversabilityPooler = PromptAttentionMapPooler[anyt.TraversabilityMap]
-type UncertaintyPooler = PromptAttentionMapPooler[anyt.UncertaintyMap]
+TraversabilityPooler = PromptAttentionMapPooler[anyt.TraversabilityMap]
+UncertaintyPooler = PromptAttentionMapPooler[anyt.UncertaintyMap]

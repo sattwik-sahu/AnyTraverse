@@ -2,7 +2,8 @@ from anytraverse import typing as anyt
 
 
 def update_traversability_preferences(
-    prefs: anyt.TraversabilityPreferences, updates: anyt.TraversabilityPreferences
+    traversability_preferences: anyt.TraversabilityPreferences,
+    updates: anyt.TraversabilityPreferences,
 ) -> anyt.TraversabilityPreferences:
     """
     Updates the traversability preferences using the given udpates.
@@ -15,15 +16,19 @@ def update_traversability_preferences(
         TraversabilityPreferences:
             The updated traversability preferences.
     """
-    return {**prefs, **updates}
+    return {**traversability_preferences, **updates}
 
 
-def get_prompts(prefs: anyt.TraversabilityPreferences) -> list[anyt.Prompt]:
-    return list(prefs.keys())
+def get_prompts(
+    traversability_preferences: anyt.TraversabilityPreferences,
+) -> list[anyt.Prompt]:
+    return list(traversability_preferences.keys())
 
 
-def get_weights(prefs: anyt.TraversabilityPreferences) -> list[anyt.Weight]:
-    return list(prefs.values())
+def get_weights(
+    traversability_preferences: anyt.TraversabilityPreferences,
+) -> list[anyt.Weight]:
+    return list(traversability_preferences.values())
 
 
 def parse_trav_pref_syntax(syntax: str) -> anyt.TraversabilityPreferences:

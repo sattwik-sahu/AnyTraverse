@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Iterable
+from typing import Any
 from anytraverse import typing as anyt
 
 
@@ -17,7 +17,7 @@ class BaseEncoder[TInput](ABC):
 
     @abstractmethod
     def __call__(
-        self, x: TInput | Iterable[TInput], *args: Any, **kwargs: Any
+        self, x: TInput | list[TInput], *args: Any, **kwargs: Any
     ) -> anyt.Encoding:
         pass
 

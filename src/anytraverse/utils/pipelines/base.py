@@ -1,16 +1,19 @@
-from typing import Iterable, Type
+from typing import Type
 import torch
 from anytraverse import typing as anyt
 from anytraverse.utils.base.attention_mapping import PromptAttentionMapping
-from anytraverse.utils.base.map_pooler import TraversabilityPooler, UncertaintyPooler
+from anytraverse.utils.base.map_pooling import TraversabilityPooler, UncertaintyPooler
 from anytraverse.utils.roi import RegionOfInterest
 from anytraverse.utils.state import TraversalState, Threshold, AnyTraverseState
 from anytraverse.utils.base.history import EncodingHistory
-from anytraverse.utils.base.encoder import ImageEncoder
+from anytraverse.utils.base.encoding import ImageEncoder
 from anytraverse.utils.trav_pref import (
     update_traversability_preferences,
     parse_trav_pref_syntax,
+    get_prompts,
+    get_weights,
 )
+from anytraverse.helpers.device import DEVICE
 
 
 class AnyTraverse[TImage: anyt.Image]:
@@ -70,8 +73,8 @@ class AnyTraverse[TImage: anyt.Image]:
         self._image_encoder = image_encoder
         self._traversal_state = TraversalState.OK
         self._threshold = threshold
-        self._ref_scene_encoding: anyt.Encoding = torch.empty(image_encoder.DIM)
-        self._current_scene_encoding: anyt.Encoding = torch.empty(image_encoder.DIM)
+        self._ref_scene_encoding: anyt.Encoding = torch.empty(0)
+        self._current_scene_encoding: anyt.Encoding = torch.empty(0)
 
     @property
     def traversability_preferences(self) -> anyt.TraversabilityPreferences:
@@ -79,12 +82,29 @@ class AnyTraverse[TImage: anyt.Image]:
         The traversability preferences as a `dict[str, float]` in
         the form `{"<prompt1>": <weight1>, ...}`
         """
-        return self.traversability_preferences
+        return self._traversability_preferences
+
+    @traversability_preferences.setter
+    def traversability_preferences(
+        self, updated_traversability_preferences: anyt.TraversabilityPreferences
+    ) -> anyt.TraversabilityPreferences:
+        prompts, weights = (
+            get_prompts(updated_traversability_preferences),
+            get_weights(updated_traversability_preferences),
+        )
+        assert all(len(prompt) > 0 for prompt in prompts), (
+            "Empty prompts not allowed in traversability preferences"
+        )
+        assert all(weight >= -1 and weight <= 1 for weight in weights), (
+            "All weights in traversability preferences must be in range [-1, 1]"
+        )
+        self._traversability_preferences = updated_traversability_preferences
+        return self._traversability_preferences
 
     def _create_maps(
         self, image: TImage
     ) -> tuple[
-        Iterable[anyt.PromptAttentionMap], anyt.TraversabilityMap, anyt.UncertaintyMap
+        list[anyt.PromptAttentionMap], anyt.TraversabilityMap, anyt.UncertaintyMap
     ]:
         """
         Creates the different maps to be used in the pipeline.
@@ -93,8 +113,8 @@ class AnyTraverse[TImage: anyt.Image]:
             image (TImage): The image to generate the maps from.
 
         Returns:
-            - attention_maps (Iterable[PromptAttentionMap]):
-                The attention maps on the image for each of the prompts, as an iterable.
+            - attention_maps (list[PromptAttentionMap]):
+                The attention maps on the image for each of the prompts, as a list.
             - traversability_map (TraversabilityMap):
                 The traversability map showing the traversability (0-1) of each pixel in the image.
             - uncertainty_map (UncertaintyMap):
@@ -104,15 +124,17 @@ class AnyTraverse[TImage: anyt.Image]:
         """
         attention_maps = self._prompt_attention_mapping(
             x=image,
-            prompts=[
-                prompt for (prompt, _) in self._traversability_preferences.items()
-            ],
+            prompts=get_prompts(
+                traversability_preferences=self._traversability_preferences
+            ),
         )
         traversability_map = self._traversability_pooler.pool(
-            maps=attention_maps, prefs=self._traversability_preferences
+            maps=attention_maps,
+            traversability_preferences=self._traversability_preferences,
         )
         uncertainty_map = self._uncertainty_pooler.pool(
-            maps=attention_maps, prefs=self._traversability_preferences
+            maps=attention_maps,
+            traversability_preferences=self._traversability_preferences,
         )
         return attention_maps, traversability_map, uncertainty_map
 
@@ -120,11 +142,33 @@ class AnyTraverse[TImage: anyt.Image]:
         self, delta_tau: anyt.TraversabilityPreferences
     ) -> anyt.TraversabilityPreferences:
         self._traversability_preferences = update_traversability_preferences(
-            prefs=self._traversability_preferences, updates=delta_tau
+            traversability_preferences=self._traversability_preferences,
+            updates=delta_tau,
         )
         return self._traversability_preferences
 
-    def human_call(self, human_input: str) -> anyt.TraversabilityPreferences:
+    def _update_tau_and_history(
+        self, delta_tau: anyt.TraversabilityPreferences = dict()
+    ) -> anyt.HistoryElement[anyt.Encoding]:
+        # Set reference scene encoding to current scene encoding
+        self._ref_scene_encoding = self._current_scene_encoding
+        # NOTE Technical - load to right device
+        self._ref_scene_encoding = self._ref_scene_encoding.to(
+            device=self._current_scene_encoding.device
+        )
+        # Update traversability preferences
+        self._traversability_preferences = update_traversability_preferences(
+            traversability_preferences=self._traversability_preferences,
+            updates=delta_tau,
+        )
+        # Save new element in history
+        new_history_element = self._history.add(
+            key=self._current_scene_encoding,
+            traversabilty_preferences=self._traversability_preferences,
+        )
+        return new_history_element
+
+    def human_call(self, human_input: str) -> anyt.HistoryElement[anyt.Encoding]:
         """
         Perform a human operator call with human inputs for the traversability
         preferences expressed in the syntax:
@@ -136,24 +180,13 @@ class AnyTraverse[TImage: anyt.Image]:
         Returns:
             The updated traversability preferences in the AnyTraverse pipeline.
         """
-        # Update the reference scene encoding
-        self._ref_scene_encoding = self._current_scene_encoding
-
-        # Update the traversability preferences
-        self._update_traversability_preferences(
-            delta_tau=parse_trav_pref_syntax(syntax=human_input)
-        )
-
-        # Add the current human operator interaction to history
-        self._history.add(
-            key=self._current_scene_encoding,
-            traversabilty_preferences=self._traversability_preferences,
-        )
-        return self._traversability_preferences
+        delta_tau = parse_trav_pref_syntax(syntax=human_input)
+        return self._update_tau_and_history(delta_tau=delta_tau)
 
     def step(self, image: TImage) -> AnyTraverseState:
         """
-        Perform one time step in the AnyTraverse pipeline, on the image of type `TImage`
+        Perform one time step in the AnyTraverse pipeline, on the image of type `TImage`.
+        The actual logic explained in the paper is implemented here.
 
         Args:
             image (TImage): The image to perform the functionality on.
@@ -164,10 +197,11 @@ class AnyTraverse[TImage: anyt.Image]:
         """
         # Get the encoding of the current scene
         self._current_scene_encoding = self._image_encoder(x=image)
+        print(self._current_scene_encoding.device, "pe hai current scene embedding")
 
         # Set the reference scene encoding to the encoding of the first frame
         if self._ref_scene_encoding.numel() == 0:
-            self._ref_scene_encoding = self._current_scene_encoding
+            self._update_tau_and_history()
 
         # Create the different maps
         attention_maps, traversability_map, uncertainty_map = self._create_maps(
@@ -179,19 +213,21 @@ class AnyTraverse[TImage: anyt.Image]:
         uncertainty_map_roi = self._roi.extract(mat=uncertainty_map)
 
         # Check if human operator call required
+        # Get the similarity with the reference scene
         ref_scene_similarity = self._similarity_func(
             self._current_scene_encoding, self._ref_scene_encoding
         )
+        # Current scene not sufficiently similar to reference scene
         if ref_scene_similarity < self._threshold.ref_scene_similarity:
             # Search history for best match
             best_match_encoding, best_match_traversability_preferences = (
                 self._history.find_best_match(query=self._current_scene_encoding)
             )
             # Is the best match similar enough?
-            if (
-                self._similarity_func(self._current_scene_encoding, best_match_encoding)
-                >= self._threshold.ref_scene_similarity
-            ):
+            best_match_similarity = self._similarity_func(
+                self._current_scene_encoding, best_match_encoding
+            )
+            if best_match_similarity >= self._threshold.ref_scene_similarity:
                 # Successful hit in history
                 # Update the reference scene embedding
                 self._ref_scene_encoding = best_match_encoding
@@ -199,7 +235,7 @@ class AnyTraverse[TImage: anyt.Image]:
                 self._update_traversability_preferences(
                     delta_tau=best_match_traversability_preferences
                 )
-                # It is OK to go ahead
+                # Avoided redundant human operator call using history, good to go!
                 self._traversal_state = TraversalState.OK
             else:
                 # No good match found in history, unknown scene encountered
@@ -208,6 +244,7 @@ class AnyTraverse[TImage: anyt.Image]:
             # Too much uncertainty in the image ROI, unknown object detected
             self._traversal_state = TraversalState.UNKOWN_OBJ
         else:
+            # No human operator call required, good to go!
             self._traversal_state = TraversalState.OK
 
         return AnyTraverseState(

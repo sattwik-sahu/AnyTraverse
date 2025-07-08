@@ -20,6 +20,6 @@ class RegionOfInterest:
 
     def extract(self, mat: TMat) -> TMat:
         height, width = mat.shape[-2:]
-        x_start, x_end = [width * bound for bound in self._x_bounds]
-        y_start, y_end = [height * bound for bound in self._y_bounds]
+        x_start, x_end = [int(width * bound) for bound in self._x_bounds]
+        y_start, y_end = [int(height * bound) for bound in self._y_bounds]
         return mat[y_start : y_end + 1, x_start : x_end + 1]

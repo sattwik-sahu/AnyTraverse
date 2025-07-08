@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
 from anytraverse import typing as anyt
-from typing import Iterable
 
 
 class TraversalState(Enum):
@@ -26,7 +25,7 @@ class AnyTraverseState:
     image_encoding: anyt.Encoding
     """The image encoding of the image passed"""
 
-    attention_maps: Iterable[anyt.PromptAttentionMap]
+    attention_maps: list[anyt.PromptAttentionMap]
     """
     The attention maps on the image for each of the prompts,
     each a `anyt.AttentionMap` (alias for `torch.Tensor`)

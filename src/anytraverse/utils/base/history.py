@@ -14,6 +14,10 @@ class BaseHistory[TKey](ABC):
     def __init__(self) -> None:
         self._store: list[anyt.HistoryElement[TKey]] = []
 
+    @property
+    def store(self) -> list[anyt.HistoryElement[TKey]]:
+        return self._store
+
     @abstractmethod
     def find_best_match(
         self, query: TKey, *args, **kwargs
@@ -34,6 +38,7 @@ class SimilarityHistory[TKey, TSim](BaseHistory[TKey], ABC):
     """
 
     def __init__(self, similarity_func: anyt.SimilarityFunction[TKey, TSim]) -> None:
+        super().__init__()
         self._similarity_func = similarity_func
 
 
@@ -49,13 +54,19 @@ class EncodingHistory(SimilarityHistory[anyt.Encoding, torch.Tensor]):
         super().__init__(similarity_func=similarity_func)
 
     def _get_encodings(self) -> torch.Tensor:
+        print(f"{len(self.store)} elements in store now...")
         return torch.cat([encoding.view(1, -1) for (encoding, _) in self._store], dim=0)
 
     @override
     def find_best_match(
         self, query: anyt.Encoding
     ) -> anyt.HistoryElement[anyt.Encoding]:
-        similarities = self._similarity_func(query, self._get_encodings())
+        similarities = self._similarity_func(query, self._get_encodings()).ravel()
         best_match_inx = int(similarities.argmax())
         best_match = self._store[best_match_inx]
         return best_match
+
+
+if __name__ == "__main__":
+    hist = EncodingHistory(similarity_func=torch.cosine_similarity)
+    print(hist.store)
