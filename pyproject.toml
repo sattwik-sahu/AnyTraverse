@@ -1,6 +1,6 @@
 [project]
 name = "anytraverse"
-version = "1.0.0"
+version = "1.0.2"
 description = "Offroad Traversability Segmentation with VLM and Human in the Loop"
 readme = "README.md"
 authors = [
@@ -11,26 +11,21 @@ authors = [
 ]
 requires-python = ">=3.12.5"
 dependencies = [
-    "accelerate>=1.7.0",
-    "clip",
-    "depthai-sdk>=1.15.1",
-    "fastapi>=0.115.12",
     "ftfy>=6.3.1",
-    "matplotlib>=3.10.3",
     "numpy>=1.26.4",
+    "pillow>=11.2.1",
     "regex>=2024.11.6",
-    "rerun-sdk>=0.23.1",
-    "rich>=14.0.0",
-    "scikit-learn>=1.6.1",
-    "scipy>=1.15.3",
-    "seaborn>=0.13.2",
+]
+
+[project.optional-dependencies]
+torch = [
     "torch>=2.7.0",
     "torchvision>=0.22.0",
-    "tqdm>=4.67.1",
+]
+hf = [
     "transformers>=4.52.3",
-    "typer>=0.15.4",
-    "uvicorn>=0.34.2",
-    "websockets>=15.0.1",
+    "accelerate>=1.7.0",
+    "einops>=0.8.1",
 ]
 
 [project.scripts]
@@ -42,10 +37,4 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["ipython>=9.2.0", "jupyter>=1.1.1", "pytest>=8.3.5", "ruff>=0.11.11"]
-planning = [
-    "pynput>=1.8.1",
-    "roboticstoolbox-python>=1.1.1",
-]
-
-[tool.uv.sources]
-clip = { git = "https://github.com/openai/CLIP.git" }
+viz = ["matplotlib>=3.10.3", "seaborn>=0.13.2"]
