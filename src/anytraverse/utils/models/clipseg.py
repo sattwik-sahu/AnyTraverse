@@ -21,8 +21,8 @@ class CLIPSegAttentionMapping[TImage: anyt.Image](PromptAttentionMapping[TImage]
             model_name, use_fast=True, cache_dir="data/weights/clipseg"
         )
         self._model = CLIPSegForImageSegmentation.from_pretrained(
-            model_name, cache_dir="data/weights/clipseg"
-        ).to(device=device)  # type: ignore
+            model_name, cache_dir="data/weights/clipseg", device_map=str(device)
+        )
 
     @override
     def __call__(

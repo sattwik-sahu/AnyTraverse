@@ -13,7 +13,6 @@ from anytraverse.utils.trav_pref import (
     get_prompts,
     get_weights,
 )
-from anytraverse.helpers.device import DEVICE
 
 
 class AnyTraverse[TImage: anyt.Image]:
@@ -197,7 +196,6 @@ class AnyTraverse[TImage: anyt.Image]:
         """
         # Get the encoding of the current scene
         self._current_scene_encoding = self._image_encoder(x=image)
-        print(self._current_scene_encoding.device, "pe hai current scene embedding")
 
         # Set the reference scene encoding to the encoding of the first frame
         if self._ref_scene_encoding.numel() == 0:
@@ -209,8 +207,10 @@ class AnyTraverse[TImage: anyt.Image]:
         )
 
         # Extract the ROI from the traversability and uncertainty maps
-        traversability_map_roi = self._roi.extract(mat=traversability_map)
-        uncertainty_map_roi = self._roi.extract(mat=uncertainty_map)
+        traversability_map_roi, roi_bbox_start, roi_bbox_end = self._roi.extract(
+            mat=traversability_map
+        )
+        uncertainty_map_roi, _, _ = self._roi.extract(mat=uncertainty_map)
 
         # Check if human operator call required
         # Get the similarity with the reference scene
@@ -254,6 +254,8 @@ class AnyTraverse[TImage: anyt.Image]:
             uncertainty_map=uncertainty_map,
             traversability_map_roi=traversability_map_roi,
             uncertainty_map_roi=uncertainty_map_roi,
+            ref_scene_similarity=ref_scene_similarity.item(),
+            roi_bbox=(roi_bbox_start, roi_bbox_end),
             roi_traversability=traversability_map_roi.mean().item(),
             roi_uncertainty=uncertainty_map_roi.mean().item(),
             traversal_state=self._traversal_state,

@@ -58,10 +58,21 @@ class AnyTraverseState:
     The region of interest (ROI) extracted from the uncertainty map
     """
 
+    ref_scene_similarity: float
+    """
+    Similarity score of current scene with the reference scene.
+    """
+
     traversability_preferences: anyt.TraversabilityPreferences
     """
     The traversability preferences as `anyt.TraversabilityPreferences`
     (alias for `dict[str, float]`) of the form `{"<prompt1>": <weight1>, ...}`
+    """
+
+    roi_bbox: tuple[tuple[int, int], tuple[int, int]]
+    """
+    The region of interest (ROI), as start and end coordinates of a bounding box.
+    Format: ((x_start, y_start), (x_end, y_end))
     """
 
     roi_uncertainty: float

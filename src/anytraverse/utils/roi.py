@@ -18,8 +18,18 @@ class RegionOfInterest:
         self._x_bounds = x_bounds
         self._y_bounds = y_bounds
 
-    def extract(self, mat: TMat) -> TMat:
+    def extract(self, mat: TMat) -> tuple[TMat, tuple[int, int], tuple[int, int]]:
+        """
+        Extracts the region of interest and the pixel coordinates of the ROI as a box.
+
+        Args:
+            mat (torch.Tensor | npt.NDArray): The image of map to find the ROI of as a
+        """
         height, width = mat.shape[-2:]
         x_start, x_end = [int(width * bound) for bound in self._x_bounds]
         y_start, y_end = [int(height * bound) for bound in self._y_bounds]
-        return mat[y_start : y_end + 1, x_start : x_end + 1]
+        return (
+            mat[y_start : y_end + 1, x_start : x_end + 1],
+            (x_start, y_start),
+            (x_end, y_end),
+        )

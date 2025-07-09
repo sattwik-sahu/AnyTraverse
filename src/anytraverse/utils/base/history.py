@@ -54,7 +54,6 @@ class EncodingHistory(SimilarityHistory[anyt.Encoding, torch.Tensor]):
         super().__init__(similarity_func=similarity_func)
 
     def _get_encodings(self) -> torch.Tensor:
-        print(f"{len(self.store)} elements in store now...")
         return torch.cat([encoding.view(1, -1) for (encoding, _) in self._store], dim=0)
 
     @override
@@ -65,8 +64,3 @@ class EncodingHistory(SimilarityHistory[anyt.Encoding, torch.Tensor]):
         best_match_inx = int(similarities.argmax())
         best_match = self._store[best_match_inx]
         return best_match
-
-
-if __name__ == "__main__":
-    hist = EncodingHistory(similarity_func=torch.cosine_similarity)
-    print(hist.store)
