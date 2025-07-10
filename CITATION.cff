@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "AnyTraverse: An off-road traversability framework with VLM and human operator in the loop"
+authors:
+  - family-names: Sahu
+    given-names: Sattwik Kumar
+  - family-names: Singh
+    given-names: Agamdeep
+  - family-names: Nambiar
+    given-names: Karthik
+  - family-names: Saripalli
+    given-names: Srikanth
+  - family-names: Sujit
+    given-names: P. B.
+date-released: 2025-06-20
+version: 1.0.0
+doi: 10.48550/arXiv.2506.16826
+url: https://arxiv.org/abs/2506.16826
+repository-code: https://github.com/sattwik-sahu/AnyTraverse
+message: "If you use this package, please cite our arXiv paper."
