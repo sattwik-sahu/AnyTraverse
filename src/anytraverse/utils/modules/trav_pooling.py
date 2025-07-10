@@ -43,3 +43,32 @@ class ProbabilisticTraversabilityPooler(TraversabilityPooler):
         )
 
         return proba_trav
+
+
+class WeightedMaxTraversabilityPooler(TraversabilityPooler):
+    """
+    The weighted max traversability pooler discussed in the paper.
+    """
+
+    @staticmethod
+    @override
+    def pool(
+        maps: list[anyt.PromptAttentionMap],
+        traversability_preferences: anyt.TraversabilityPreferences,
+    ) -> anyt.TraversabilityMap:
+        # Create weighted maps
+        weights = get_weights(traversability_preferences=traversability_preferences)
+        weighted_maps = torch.stack(
+            [weight * attn_map for attn_map, weight in zip(maps, weights)], dim=0
+        )
+        # Get the absolute weighted maps
+        abs_weighted_maps = weighted_maps.abs()
+        # For each pixel, which map has the highest absolute weighted value?
+        _, max_abs_weighted_map_index = abs_weighted_maps.max(dim=0)
+        # Create the pooled traversability map
+        traversability_map: anyt.TraversabilityMap = (
+            weighted_maps.gather(dim=0, index=max_abs_weighted_map_index.unsqueeze(0))
+            .squeeze(0)
+            .clip(min=0.0, max=1.0)
+        )
+        return traversability_map

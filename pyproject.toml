@@ -10,23 +10,7 @@ authors = [
     { name = "Sujit P B", email = "sujit@iiserb.ac.in" },
 ]
 requires-python = ">=3.12.5"
-dependencies = [
-    "ftfy>=6.3.1",
-    "numpy>=1.26.4",
-    "pillow>=11.2.1",
-    "regex>=2024.11.6",
-]
-
-[project.optional-dependencies]
-torch = [
-    "torch>=2.7.0",
-    "torchvision>=0.22.0",
-]
-hf = [
-    "transformers>=4.52.3",
-    "accelerate>=1.7.0",
-    "einops>=0.8.1",
-]
+dependencies = ["numpy>=1.26.4", "pillow>=11.2.1"]
 
 [project.scripts]
 anytraverse = "anytraverse:main"
@@ -36,5 +20,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
+torch = ["torch>=2.7.0", "torchvision>=0.22.0"]
 dev = ["ipython>=9.2.0", "jupyter>=1.1.1", "pytest>=8.3.5", "ruff>=0.11.11"]
+hf = ["transformers>=4.52.3", "accelerate>=1.7.0", "einops>=0.8.1"]
 viz = ["matplotlib>=3.10.3", "seaborn>=0.13.2"]

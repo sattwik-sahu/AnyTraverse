@@ -44,21 +44,8 @@ name = "anytraverse"
 version = "1.0.2"
 source = { editable = "." }
 dependencies = [
-    { name = "ftfy" },
     { name = "numpy" },
     { name = "pillow" },
-    { name = "regex" },
-]
-
-[package.optional-dependencies]
-hf = [
-    { name = "accelerate" },
-    { name = "einops" },
-    { name = "transformers" },
-]
-torch = [
-    { name = "torch" },
-    { name = "torchvision" },
 ]
 
 [package.dev-dependencies]
@@ -68,6 +55,15 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+hf = [
+    { name = "accelerate" },
+    { name = "einops" },
+    { name = "transformers" },
+]
+torch = [
+    { name = "torch" },
+    { name = "torchvision" },
+]
 viz = [
     { name = "matplotlib" },
     { name = "seaborn" },
@@ -75,17 +71,9 @@ viz = [
 
 [package.metadata]
 requires-dist = [
-    { name = "accelerate", marker = "extra == 'hf'", specifier = ">=1.7.0" },
-    { name = "einops", marker = "extra == 'hf'", specifier = ">=0.8.1" },
-    { name = "ftfy", specifier = ">=6.3.1" },
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "pillow", specifier = ">=11.2.1" },
-    { name = "regex", specifier = ">=2024.11.6" },
-    { name = "torch", marker = "extra == 'torch'", specifier = ">=2.7.0" },
-    { name = "torchvision", marker = "extra == 'torch'", specifier = ">=0.22.0" },
-    { name = "transformers", marker = "extra == 'hf'", specifier = ">=4.52.3" },
 ]
-provides-extras = ["torch", "hf"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -93,6 +81,15 @@ dev = [
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "ruff", specifier = ">=0.11.11" },
+]
+hf = [
+    { name = "accelerate", specifier = ">=1.7.0" },
+    { name = "einops", specifier = ">=0.8.1" },
+    { name = "transformers", specifier = ">=4.52.3" },
+]
+torch = [
+    { name = "torch", specifier = ">=2.7.0" },
+    { name = "torchvision", specifier = ">=0.22.0" },
 ]
 viz = [
     { name = "matplotlib", specifier = ">=3.10.3" },
@@ -480,18 +477,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/00/f7/27f15d41f0ed38e8fcc488584b57e902b331da7f7c6dcda53721b15838fc/fsspec-2025.5.1.tar.gz", hash = "sha256:2e55e47a540b91843b755e83ded97c6e897fa0942b11490113f09e9c443c2475", size = 303033, upload-time = "2025-05-24T12:03:23.792Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bb/61/78c7b3851add1481b048b5fdc29067397a1784e2910592bc81bb3f608635/fsspec-2025.5.1-py3-none-any.whl", hash = "sha256:24d3a2e663d5fc735ab256263c4075f374a174c3410c0b25e5bd1970bceaa462", size = 199052, upload-time = "2025-05-24T12:03:21.66Z" },
-]
-
-[[package]]
-name = "ftfy"
-version = "6.3.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "wcwidth" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/d3/8650919bc3c7c6e90ee3fa7fd618bf373cbbe55dff043bd67353dbb20cd8/ftfy-6.3.1.tar.gz", hash = "sha256:9b3c3d90f84fb267fe64d375a07b7f8912d817cf86009ae134aa03e1819506ec", size = 308927, upload-time = "2024-10-26T00:50:35.149Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/6e/81d47999aebc1b155f81eca4477a616a70f238a2549848c38983f3c22a82/ftfy-6.3.1-py3-none-any.whl", hash = "sha256:7c70eb532015cd2f9adb53f101fb6c7945988d023a085d127d1573dc49dd0083", size = 44821, upload-time = "2024-10-26T00:50:33.425Z" },
 ]
 
 [[package]]
