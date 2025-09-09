@@ -9,8 +9,12 @@ authors = [
     { name = "Karthik Babu Nambiar", email = "karthik23@iiserb.ac.in" },
     { name = "Sujit P B", email = "sujit@iiserb.ac.in" },
 ]
-requires-python = ">=3.12.5"
-dependencies = ["numpy>=1.26.4", "pillow>=11.2.1"]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.26.4",
+ "pillow>=11.2.1",
+ "torch>=2.7.0",
+]
 
 [project.scripts]
 anytraverse = "anytraverse:main"
