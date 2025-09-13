@@ -2,7 +2,7 @@ import torch
 from torch.nn import functional as F
 from transformers import AutoModel, AutoImageProcessor
 from anytraverse.utils.base.encoding import HuggingFaceImageEncoder
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from anytraverse.helpers.device import DEVICE
 
 

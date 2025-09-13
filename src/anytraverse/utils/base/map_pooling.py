@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 
 
 class BaseMapPooler[TInputMap, TPooledMap](ABC):

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import torch
 from typing_extensions import override
 
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 
 
 class BaseHistory[TKey](ABC):

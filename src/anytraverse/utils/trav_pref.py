@@ -1,4 +1,4 @@
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 
 
 def update_traversability_preferences(

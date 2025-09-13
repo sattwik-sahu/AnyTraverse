@@ -1,6 +1,6 @@
 from typing import Type
 import torch
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from anytraverse.utils.base.attention_mapping import PromptAttentionMapping
 from anytraverse.utils.base.map_pooling import TraversabilityPooler, UncertaintyPooler
 from anytraverse.utils.roi import RegionOfInterest

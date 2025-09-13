@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from numpy import typing as npt
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from anytraverse.utils.base.map_pooling import TraversabilityPooler
 from anytraverse.utils.trav_pref import get_weights
 from typing_extensions import override

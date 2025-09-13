@@ -4,7 +4,7 @@ from torchvision.transforms import Resize
 from transformers import AutoProcessor, CLIPSegForImageSegmentation
 from typing_extensions import override
 
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from anytraverse.helpers.device import DEVICE
 from anytraverse.utils.base.attention_mapping import PromptAttentionMapping
 
