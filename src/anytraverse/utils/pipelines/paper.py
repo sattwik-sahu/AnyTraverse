@@ -8,7 +8,7 @@ from anytraverse.utils.modules.unc_pooling import (
 )
 from anytraverse.utils.roi import RegionOfInterest
 from anytraverse.utils.state import Threshold
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from PIL import Image as PILImage
 
 

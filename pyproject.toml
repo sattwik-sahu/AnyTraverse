@@ -1,6 +1,6 @@
 [project]
 name = "anytraverse"
-version = "1.0.4"
+version = "1.0.5"
 description = "Offroad Traversability Segmentation with VLM and Human in the Loop"
 readme = "README.md"
 authors = [
