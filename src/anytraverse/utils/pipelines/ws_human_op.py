@@ -48,9 +48,6 @@ class AnyTraverseWebsocket:
         with serve(
             handler=self._handler, host=self._hostname, port=self._port
         ) as self._server:
-            print(
-                f"Starting AnyTraverse HOC server on ws://{self._hostname}:{self._port}"
-            )
             self._server.serve_forever()
 
     def shutdown(self) -> None:

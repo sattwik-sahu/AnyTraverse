@@ -13,13 +13,17 @@ requires-python = ">=3.12.5"
 dependencies = [
     "accelerate>=1.7.0",
     "clip",
-    "depthai-sdk>=1.15.1",
     "fastapi>=0.115.12",
     "ftfy>=6.3.1",
+    "future>=1.0.0",
+    "gnureadline>=8.2.13",
     "imutils>=0.5.4",
     "matplotlib>=3.10.3",
+    "mavproxy>=1.8.74",
     "numpy>=1.26.4",
     "oakd-sensor",
+    "oakd-vio-zmq",
+    "pymavlink>=2.4.49",
     "regex>=2024.11.6",
     "rich>=14.0.0",
     "scikit-learn>=1.6.1",
@@ -43,8 +47,8 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["ipython>=9.2.0", "jupyter>=1.1.1", "pytest>=8.3.5", "ruff>=0.11.11"]
-planning = ["roboticstoolbox-python>=1.1.1"]
 
 [tool.uv.sources]
 clip = { git = "https://github.com/openai/CLIP.git" }
 oakd-sensor = { git = "https://gitlab.com/sattwik-sahu/oakd-sensor.git" }
+oakd-vio-zmq = { git = "https://github.com/sattwik-sahu/oakd-vio-zmq.git" }

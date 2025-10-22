@@ -1,19 +1,13 @@
 import zmq
 from abc import ABC, abstractmethod
 from typing_extensions import override
-from typing import TypedDict
 import json
 import time
 
-
-class RobotWaypointCommand(TypedDict):
-    start: tuple[int, int]
-    target: tuple[int, int]
-
-
-class RobotControlCommand(TypedDict):
-    velocity: list[float]
-    yaw_speed: float
+from anytraverse.utils.helpers.robots.control import (
+    RobotControlCommand,
+    RobotWaypointCommand,
+)
 
 
 RobotCommand = RobotControlCommand | RobotWaypointCommand
@@ -42,7 +36,6 @@ class ZMQPublisher[TMessage](ABC):
         self.socket.setsockopt(zmq.SNDHWM, 10)  # Optional: High-water mark for queuing
         self.socket.bind(self.address)
         time.sleep(0.5)
-        
 
     @abstractmethod
     def serialize_message(self, message: TMessage) -> str:

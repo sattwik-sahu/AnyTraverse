@@ -207,9 +207,13 @@ class AnyTraverseVisionNavigator:
                 while True:
                     image, _ = self._oakd.read_img_and_pointcloud()
                     pil_image = PILImage.fromarray(image)
+                    self._console.log(f"Prompts: {self._anytraverse.prompts}")
                     anytraverse_state = self._anytraverse.run_next(frame=pil_image)
                     nav_state = self._navigator.update(
                         anytraverse_state=anytraverse_state
+                    )
+                    self._console.log(
+                        f"AnyTraverse HOC state: {anytraverse_state.human_call.value.upper()}"
                     )
                     self._console.log(
                         f"Navigation state: [bold green]{nav_state.value.upper()}[/]"
@@ -242,11 +246,11 @@ class AnyTraverseVisionNavigator:
 
 def main():
     console = Console()
+    init_prompts = get_weighted_prompt_from_string(input("Enter init promtps: "))
+    console.log(f"Prompts: {init_prompts}")
     with console.status("Creating AnyTraverse pipeline..."):
         anytraverse = create_anytraverse_hoc_context(
-            init_prompts=get_weighted_prompt_from_string(
-                console.input("Enter init promtps: ")
-            ),
+            init_prompts=init_prompts,
             mask_pooler=mask_poolers.ProbabilisticPooler,
         )
         anytraverse._thresholds["ref_sim"] = 0.7

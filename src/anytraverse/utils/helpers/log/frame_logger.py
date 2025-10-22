@@ -67,7 +67,11 @@ class AnyTraverseLogger:
         )
 
     def add_frame(
-        self, image: Image.Image, trav_map: torch.Tensor, unc_map: torch.Tensor
+        self,
+        image: Image.Image,
+        trav_map: torch.Tensor,
+        unc_map: torch.Tensor,
+        text: str = "AnyTraverse",
     ) -> np.ndarray:
         """
         Adds a frame to the video by combining the image with traversability and uncertainty maps.
@@ -109,7 +113,23 @@ class AnyTraverseLogger:
             height, width, _ = combined.shape
             self.frame_size = (width, height)
             self._init_writer(height, width)
+        # Add text overlay with black background
+        text_pos = (30, 30)  # Position in top right
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1
+        thickness = 2
+        text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
 
+        # Create black background rectangle
+        padding = 10
+        bg_start = (text_pos[0] - padding, text_pos[1] - text_size[1] - padding)
+        bg_end = (text_pos[0] + text_size[0] + padding, text_pos[1] + padding)
+        cv2.rectangle(combined, bg_start, bg_end, (0, 0, 0), -1)
+
+        # Add white text
+        cv2.putText(
+            combined, text, text_pos, font, font_scale, (255, 255, 255), thickness
+        )
         # Write frame to video
         self.writer.write(combined)
 
