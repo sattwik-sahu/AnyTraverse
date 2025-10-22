@@ -1,4 +1,4 @@
-from utils.cli import app
+from anytraverse.utils.cli import app
 
 
 def main():
