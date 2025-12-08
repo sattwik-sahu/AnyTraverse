@@ -43,7 +43,7 @@ class CLIPSegAttentionMapping[TImage: anyt.Image](PromptAttentionMapping[TImage]
         resize = Resize(size=(height, width)).to(device=self._device)
 
         with torch.inference_mode():
-            if PLATFORM is PlatformType.LINUX or PlatformType.WINDOWS:
+            if (PLATFORM is PlatformType.LINUX) or (PLATFORM is PlatformType.WINDOWS):
                 # Normal batched inference on Windows and Linux
                 inputs = self._processor(
                     text=prompts,
