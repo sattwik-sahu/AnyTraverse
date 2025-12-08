@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from anytraverse.utils.base.encoding import HuggingFaceImageEncoder
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from typing import Literal, Sequence
 from typing_extensions import override
 

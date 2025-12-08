@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Sequence
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 from PIL import Image as PILImage
 import torch
 from anytraverse.helpers.device import DEVICE

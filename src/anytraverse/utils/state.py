@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from anytraverse import typing as anyt
+from anytraverse.utils import _typing as anyt
 
 
 class TraversalState(Enum):
