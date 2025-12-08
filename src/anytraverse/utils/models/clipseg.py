@@ -65,9 +65,7 @@ class CLIPSegAttentionMapping[TImage: anyt.Image](PromptAttentionMapping[TImage]
                         return_tensors="pt",
                     ).to(device=self._device)
                     # Perform inference
-                    output = torch.sigmoid(
-                        resize(self._model(**inputs).logits.squeeze(0))
-                    )
+                    output = torch.sigmoid(resize(self._model(**inputs).logits))
                     # Add the prompt attention map to the list
                     maps.append(output)
             else:
