@@ -5,6 +5,7 @@ An Offroad Traversability Framework with VLM and Human Operator in the Loop
 [![arXiv](https://img.shields.io/badge/arXiv-2506.16826v1-b31b1b.svg?logo=arxiv&style=flat)](https://arxiv.org/abs/2506.16826v1)
 [![pypi](https://img.shields.io/pypi/v/anytraverse?style=flat&logo=python)](https://pypi.org/project/anytraverse/)
 ![GitHub Repo stars](https://img.shields.io/github/stars/sattwik-sahu/anytraverse)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sattwik-sahu/AnyTraverse)
 
 ## Installation
 
@@ -39,6 +40,10 @@ This example explains how to get started with the implementation discussed in th
 
 ```python
 from anytraverse import build_pipeline_from_paper
+from PIL import Image as PILImage
+from matplotlib import pyplot as plt
+from matplotlib import patches
+import requests
 
 
 def main():
@@ -48,9 +53,7 @@ def main():
 
     # Build the pipeline from the paper
     anytraverse = build_pipeline_from_paper(
-        init_traversabilty_preferences={
-            "road": 1, "bush": -0.8, "rock": 0.45
-        },
+        init_traversabilty_preferences={"road": 1, "bush": -0.8, "rock": 0.45},
         ref_scene_similarity_threshold=0.8,
         roi_uncertainty_threshold=0.3,
         roi_x_bounds=(0.333, 0.667),
@@ -62,7 +65,9 @@ def main():
 
     # Plot the attention maps
     fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-    for attn_map, prompt, ax_ in zip(state.attention_maps, state.traversability_preferences, ax):
+    for attn_map, prompt, ax_ in zip(
+        state.attention_maps, state.traversability_preferences, ax
+    ):
         ax_.imshow(image)
         ax_.imshow(attn_map.cpu(), cmap="plasma", alpha=0.4)
         ax_.set_title(prompt)
@@ -91,7 +96,7 @@ def main():
         rects,
     ):
         ax_.imshow(image)
-        map_plot = ax_.imshow(m.cpu(), alpha=0.5)
+        map_plot = ax_.imshow(m.cpu(), alpha=0.5, cmap="plasma")
         ax_.add_patch(rect)
         ax_.text(
             x0,
