@@ -34,7 +34,7 @@ An Offroad Traversability Framework with VLM and Human Operator in the Loop
 
 ## Usage
 
-### Quickstart
+### Quickstart :running_man:
 
 This example explains how to get started with the implementation discussed in the [original paper](https://arxiv.org/abs/2506.16826v1). To get the implementation from the paper running, use the function provided.
 
@@ -125,7 +125,7 @@ _Attention Maps_
 _Traversability and uncertainty maps_
 ![](./assets/trav_unc_maps.png)
 
-### Make your own AnyTraverse
+### Make AnyTraverse your Own! :nerd_face:
 
 - AnyTraverse is modular and the modules from the original paper can be swapped with your own implementation easily.
 - The VLM, image encoder, traversability pooling and uncertainty pooling modules can be replaced with your own implementation, by extending abstract base classes provided in the `anytraverse` package.
@@ -135,7 +135,7 @@ _Traversability and uncertainty maps_
 
 ---
 
-## Contributing
+## Contributing :man_technologist:
 
 We'd love to see your implementations and modifications to help make AnyTraverse better. Please create a pull request (branch name: `dev/feat/<your-feature-name>`) to add a new feature and raise and issue to request a new feature.
 
