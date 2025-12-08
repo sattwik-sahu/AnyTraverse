@@ -36,12 +36,13 @@ wheels = [
 
 [[package]]
 name = "anytraverse"
-version = "1.0.6"
+version = "1.0.7"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
     { name = "pillow" },
     { name = "torch" },
+    { name = "torchvision" },
 ]
 
 [package.dev-dependencies]
@@ -56,10 +57,6 @@ hf = [
     { name = "einops" },
     { name = "transformers" },
 ]
-torch = [
-    { name = "torch" },
-    { name = "torchvision" },
-]
 viz = [
     { name = "matplotlib" },
     { name = "seaborn" },
@@ -70,6 +67,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "pillow", specifier = ">=11.2.1" },
     { name = "torch", specifier = ">=2.7.0" },
+    { name = "torchvision", specifier = ">=0.22.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -83,10 +81,6 @@ hf = [
     { name = "accelerate", specifier = ">=1.7.0" },
     { name = "einops", specifier = ">=0.8.1" },
     { name = "transformers", specifier = ">=4.52.3" },
-]
-torch = [
-    { name = "torch", specifier = ">=2.7.0" },
-    { name = "torchvision", specifier = ">=0.22.0" },
 ]
 viz = [
     { name = "matplotlib", specifier = ">=3.10.3" },

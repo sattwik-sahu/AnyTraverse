@@ -8,3 +8,7 @@ DEVICE: torch.device = torch.device(
     if torch.mps.is_available()
     else "cpu"
 )
+"""
+The hardware acceleration device.
+Preference order: `cuda` > `mps` > `cpu`
+"""
