@@ -1,11 +1,15 @@
 # AnyTraverse
 
-An Offroad Traversability Framework with VLM and Human Operator in the Loop
+An Offroad Traversability Framework with VLM and Human Operator in the Loop.
 
 [![arXiv](https://img.shields.io/badge/arXiv-2506.16826v1-b31b1b.svg?logo=arxiv&style=flat)](https://arxiv.org/abs/2506.16826v1)
 [![pypi](https://img.shields.io/pypi/v/anytraverse?style=flat&logo=python)](https://pypi.org/project/anytraverse/)
 ![GitHub Repo stars](https://img.shields.io/github/stars/sattwik-sahu/anytraverse)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sattwik-sahu/AnyTraverse)
+
+## News :newspaper:
+
+- **Jul, 2025:** AnyTraverse presented at the *19th International Symposium on Experimental Robotics*, Santa Fe, New Mexico. Set to be published in proceedings (Springer Nature, "Experimental Robotics").
 
 ## Installation
 
@@ -131,7 +135,11 @@ _Traversability and uncertainty maps_
 - The VLM, image encoder, traversability pooling and uncertainty pooling modules can be replaced with your own implementation, by extending abstract base classes provided in the `anytraverse` package.
 - Refer to the extended documentation to learn more.
 
-> **NOTE:** Extended documentation coming soon...
+> **NOTE:** You may refer to the [DeepWiki](https://deepwiki.com/sattwik-sahu/AnyTraverse) documentation to fully understand the repository, until the extended documentation is ready.
+
+### Launch AnyTraverse into Action with ROS2 :robot:
+
+AnyTraverse is fully integrated with the Nav2 navigation stack in ROS2. See [`sattwik-sahu/anytraverse_ros`](https://github.com/sattwik-sahu/anytraverse-ros) to learn more.
 
 ---
 

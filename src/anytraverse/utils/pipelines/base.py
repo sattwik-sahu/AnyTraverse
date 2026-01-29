@@ -167,7 +167,19 @@ class AnyTraverse[TImage: anyt.Image]:
         )
         return new_history_element
 
-    def human_call(self, human_input: str) -> anyt.HistoryElement[anyt.Encoding]:
+    def register_scene(self) -> anyt.HistoryElement[anyt.Encoding]:
+        """
+        Registers the current scene in the history without any change in the
+        traversability preferences.
+
+        This is just an alias function, made for semantic purposes.
+
+        Returns:
+            The newly added history element.
+        """
+        return self.human_call()
+
+    def human_call(self, human_input: str = "") -> anyt.HistoryElement[anyt.Encoding]:
         """
         Perform a human operator call with human inputs for the traversability
         preferences expressed in the syntax:
@@ -175,11 +187,22 @@ class AnyTraverse[TImage: anyt.Image]:
 
         Args:
             human_input (str): The human input as a `str` in the syntax above.
+                Default is an empty string, which just registers the scene in
+                the history, but does not change the traversability preferences.
 
         Returns:
             The updated traversability preferences in the AnyTraverse pipeline.
         """
-        delta_tau = parse_trav_pref_syntax(syntax=human_input)
+        # Clean the human input, removing spaces before and after
+        human_input = human_input.strip()
+
+        # Determine the change in the traversability preferences
+        if len(human_input) == 0:
+            # Empty dict, no change in traversability preferences
+            delta_tau = dict()
+        else:
+            # Traversability preferences changed by human
+            delta_tau = parse_trav_pref_syntax(syntax=human_input)
         return self._update_tau_and_history(delta_tau=delta_tau)
 
     def step(self, image: TImage) -> AnyTraverseState:
