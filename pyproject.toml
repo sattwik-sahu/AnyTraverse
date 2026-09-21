@@ -1,8 +1,9 @@
 [project]
 name = "anytraverse"
-version = "1.0.9"
-description = "Offroad Traversability Segmentation with VLM and Human in the Loop"
+version = "2.0.0"
+description = "Offroad traversability segmentation with VLMs and a human operator in the loop"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Sattwik Kumar Sahu", email = "sattwik21@iiserb.ac.in" },
     { name = "Agamdeep Singh", email = "agamdeep20@iiserb.ac.in" },
@@ -10,21 +11,78 @@ authors = [
     { name = "Sujit P B", email = "sujit@iiserb.ac.in" },
 ]
 requires-python = ">=3.12"
+keywords = ["robotics", "traversability", "vision-language", "segmentation", "offroad"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
 dependencies = [
-    "numpy>=1.26.4",
-    "pillow>=11.2.1",
-    "torch>=2.7.0",
-    "torchvision>=0.22.0",
+    "numpy>=1.26",
+    "pillow>=10.0",
+    "torch>=2.4",
+    "torchvision>=0.19",
 ]
 
-[project.scripts]
-anytraverse = "anytraverse:main"
+[project.optional-dependencies]
+# Hugging Face model wrappers (CLIPSeg, CLIP, SAM3, SAM2, Grounding DINO, OWLv2, SigLIP2, DINOv2).
+hf = ["transformers>=5.0", "accelerate>=1.0"]
+# Plotting helpers used in the README examples and the benchmark script.
+viz = ["matplotlib>=3.8"]
+
+[project.urls]
+Homepage = "https://github.com/sattwik-sahu/AnyTraverse"
+Paper = "https://arxiv.org/abs/2506.16826"
+Issues = "https://github.com/sattwik-sahu/AnyTraverse/issues"
+
+[dependency-groups]
+dev = [
+    "anytraverse[hf,viz]",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.11",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[dependency-groups]
-dev = ["ipython>=9.2.0", "jupyter>=1.1.1", "pytest>=8.3.5", "ruff>=0.11.11"]
-hf = ["transformers>=4.52.3", "accelerate>=1.7.0", "einops>=0.8.1"]
-viz = ["matplotlib>=3.10.3", "seaborn>=0.13.2"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/anytraverse"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "RUF", "SIM"]
+ignore = ["RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B018"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers -m 'not slow and not gpu'"
+markers = [
+    "slow: downloads real model weights from the Hugging Face Hub",
+    "gpu: requires a CUDA device",
+]
+filterwarnings = ["error::DeprecationWarning:anytraverse.*"]
+
+[tool.coverage.run]
+source = ["anytraverse"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+skip_covered = true
+show_missing = true
+exclude_also = ["if TYPE_CHECKING:", "\\.\\.\\.$"]
