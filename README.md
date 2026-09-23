@@ -9,7 +9,8 @@ An offroad traversability framework with a VLM and a human operator in the loop.
 
 ## News :newspaper:
 
-- **Jul, 2025:** AnyTraverse presented at the *19th International Symposium on Experimental Robotics*, Santa Fe, New Mexico. Set to be published in proceedings (Springer Nature, "Experimental Robotics").
+- **Sep 2026**: Released `v2` with improved API, more VLMs, and benchmarking data. 
+- **Jul 2025:** AnyTraverse presented at the *19th International Symposium on Experimental Robotics*, Santa Fe, New Mexico. Set to be published in proceedings (Springer Nature, "Experimental Robotics").
 
 ## Installation
 
