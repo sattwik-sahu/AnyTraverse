@@ -29,9 +29,9 @@ with the CUDA memory cache cleared in between, so peak VRAM is per model.
 Measured with `python scripts/bench_scaling.py --max-prompts 10 --frames 20`
 (5 warmup frames per prompt count, 10 prompts:
 `road`, `grass`, `bush`, `rock`, `tree`, `mud`, `sand`, `gravel`, `puddle`, `fence`).
-Raw numbers: [`assets/prompt_scaling.csv`](assets/prompt_scaling.csv).
+Raw numbers: [`assets/prompt_scaling.csv`](../assets/prompt_scaling.csv).
 
-![Step time vs. number of prompts](assets/prompt_scaling.png)
+![Step time vs. number of prompts](../assets/prompt_scaling.png)
 
 Takeaways:
 
