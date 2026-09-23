@@ -77,7 +77,7 @@ _Traversability and uncertainty maps_
 
 ### Other VLMs and encoders
 
-Swap the attention model, the scene encoder, or both. All weights below are openly available on the Hugging Face Hub and fit in 10 GB of VRAM in half precision. See [benchmarks.md](benchmarks.md) for measured latency and memory on an RTX A4500 — e.g. the paper pipeline runs at ~19 fps in ~0.6 GB, and the heaviest SAM 3 combination peaks around 3 GB.
+Swap the attention model, the scene encoder, or both. All weights below are openly available on the Hugging Face Hub and fit in 10 GB of VRAM in half precision. See [benchmarks.md](benchmarks.md) for measured latency and memory on an RTX A4500 — e.g. the paper pipeline runs in ~8 ms in ~0.6 GB, and the heaviest SAM 3 combination peaks around 3 GB. There is also a [prompt-scaling plot](benchmarks.md#step-time-vs-number-of-prompts) showing step time for 1–10 prompts.
 
 ```python
 from anytraverse import build_pipeline_grounded_sam2, build_pipeline_sam3

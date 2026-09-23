@@ -44,7 +44,8 @@ def bench_attention(name: str, image: Image.Image, frames: int, device: str, dty
     """Times full prompt-attention inference and records peak VRAM."""
     mapping = ATTENTION_MODELS[name](device, getattr(torch, dtype))
     prompts = PROMPTS
-    mapping(image, prompts[:1])  # warmup (and CUDA-graph-free lazy init)
+    for _ in range(5):  # warmup on the full prompt count to stabilize GPU clocks
+        mapping(image, prompts)
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.synchronize()
@@ -69,7 +70,8 @@ def bench_attention(name: str, image: Image.Image, frames: int, device: str, dty
 def bench_encoder(name: str, image: Image.Image, frames: int, device: str, dtype: str) -> dict:
     """Times scene-encoder inference and records peak VRAM."""
     encoder = ENCODERS[name](device, getattr(torch, dtype))
-    encoder(image)  # warmup
+    for _ in range(5):  # warmup to stabilize GPU clocks
+        encoder(image)
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.synchronize()
