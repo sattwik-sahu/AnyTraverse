@@ -15,12 +15,12 @@ An offroad traversability framework with a VLM and a human operator in the loop.
 
 Requires Python 3.12 or newer.
 
-1. **Install PyTorch first**, so you get the right build for your platform (CUDA, MPS, CPU, or a Jetson wheel from NVIDIA).
+1. **Install PyTorch first**, so you get the right build for your platform (CUDA, MPS, CPU, or a Jetson wheel).
    ```bash
-   uv pip install torch torchvision       # uv users
-   pip install torch torchvision          # pip users
+   uv pip install torch       # uv users
+   pip install torch          # pip users
    ```
-   > :warning: _PyTorch does not provide wheels for the NVIDIA Jetson platform._ Install the matching `torch`/`torchvision` wheels for your Jetson device to get GPU acceleration.
+   > :warning: _PyTorch does not provide wheels for the NVIDIA Jetson platform._ On Jetson, install the matching `torch` wheel first: JetPack 6 via `https://pypi.jetson-ai-lab.io/jp6/cu126`, JetPack 7 via `https://pypi.jetson-ai-lab.io/sbsa/cu132`. The `hf` extra below then pulls a matching `torchvision`.
 2. **Install AnyTraverse with the model backends you need.**
    ```bash
    uv pip install "anytraverse[hf]"       # uv users (Hugging Face VLMs)
@@ -45,7 +45,9 @@ import requests
 
 
 def main():
-    url = "https://source.roboflow.com/oWTBJ1yeWRbHDXbzJBrOsPVaoH92/0C8goYvWpiqF26dNKxby/original.jpg"
+    url = (
+        "https://source.roboflow.com/oWTBJ1yeWRbHDXbzJBrOsPVaoH92/0C8goYvWpiqF26dNKxby/original.jpg"
+    )
     image = PILImage.open(requests.get(url, stream=True).raw)
 
     pipeline = build_pipeline_from_paper(

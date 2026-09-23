@@ -73,7 +73,7 @@ class TestOWLv2SAM2:
         assert m1.abs().max() == 0.0  # the only box for prompt 1 is below threshold
 
     def test_low_threshold_keeps_weak_box(self, image) -> None:
-        (m0, m1) = OWLv2SAM2AttentionMapping(box_threshold=0.01, device="cpu")(
+        (_m0, m1) = OWLv2SAM2AttentionMapping(box_threshold=0.01, device="cpu")(
             image, ["road", "grass"]
         )
         assert m1.max() > 0.5

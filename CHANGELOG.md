@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Dependency modernization: lock refreshed to torch 2.14, numpy 2.5, pillow 12,
+  matplotlib 3.11, accelerate 1.15 (floors unchanged, so Jetson installs keep resolving).
+- `torchvision` moved from core dependencies to the `hf` extra (only transformers'
+  processors and SAM 3 need it); `einops` and `seaborn` dropped (verified unused,
+  including against real model weights). Core is now just `torch` + `numpy` + `pillow`.
+
 ## 2.0.0
 
 ### Breaking
