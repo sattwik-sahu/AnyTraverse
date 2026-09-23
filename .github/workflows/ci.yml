@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -U ruff
-      - run: ruff check .
-      - run: ruff format --check .
+      - run: ruff check src
+      - run: ruff format --check src
 
   test:
     runs-on: ubuntu-latest
